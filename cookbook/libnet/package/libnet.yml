@@ -1,0 +1,13 @@
+Package: libnet
+Version: 1.1.6-0
+Architecture: armeabi
+Section: libs
+Priority: optional
+Source: http://libnet-dev.sourceforge.net/
+Description: |
+ library for the construction and handling of network packets
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/lib/*.so* ${PACKAGE}${PREFIX}/lib/
