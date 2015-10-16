@@ -1,0 +1,49 @@
+#!/bin/bash
+if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
+
+PACKAGE_NAME=$(basename $(pwd))
+PACKAGE_VERSION=0.8.2
+PACKAGE_DEPEND=( openssl libpcap pcre expat curl libiconv libnet libifaddrs libbthread )
+
+FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
+ARCHIVE=${FULLNAME}.tar.gz
+
+botbrew_do_build() {
+	botbrew_download https://github.com/Ettercap/ettercap/releases/download/v${PACKAGE_VERSION}/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://github.com/taka-no-me/android-cmake/raw/master/android.toolchain.cmake android.toolchain.cmake
+	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
+	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+	botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}-android.patch
+	botbrew_import
+	botbrew_fix_crosslibconfig ${G_SYSDIR}/bin/pcap-config
+	botbrew_fix_crosslibconfig ${G_SYSDIR}/bin/pcre-config
+	botbrew_fix_crosslibconfig ${G_SYSDIR}/bin/curl-config
+	botbrew_fix_crosslibconfig ${G_SYSDIR}/bin/libnet-config
+	
+	if ! [ -e ${G_OBJECT}/Makefile ]; then
+    (
+      rm -rf ${G_OBJECT}
+      mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
+      
+      bison_path=$(which bison)
+      flex_path=$(which flex)
+      
+      cmake -DCMAKE_TOOLCHAIN_FILE=${G_ROOT}/${G_ARCHIVE}/android.toolchain.cmake \
+      -DANDROID_STANDALONE_TOOLCHAIN=${G_ROOT}/${G_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi" \
+      -DENABLE_CURSES=OFF -DENABLE_GTK=OFF -DENABLE_IPV6=ON \
+      -DBOTBREW_BUILD=TRUE -DINSTALL_PREFIX=${G_INSTALLPREFIX} \
+      -DINSTALL_DESKTOP=OFF -DBISON_EXECUTABLE=${bison_path} \
+      -DINSTALL_SYSCONFDIR=${G_INSTALLPREFIX}/etc \
+      -DHAVE_ARPA_NAMESER_H=FALSE -DBOTBREW_SYSDIR=${G_SYSDIR} \
+      -DFLEX_EXECUTABLE=${flex_path} ../${G_SOURCE}
+    )
+  fi
+	if ! [ -e ${G_EXPORT}/.d ]; then
+		${G_MAKE} -C ${G_OBJECT}
+		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
+		botbrew_fix_interpreter_path ${G_EXPORT}
+		${G_STRIP} --strip-unneeded ${G_EXP_BINDIR}/* || true
+		touch ${G_EXPORT}/.d
+	fi
+}

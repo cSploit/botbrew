@@ -1,0 +1,97 @@
+diff -uNr a/cmake/Modules/EttercapLibCheck.cmake b/cmake/Modules/EttercapLibCheck.cmake
+--- a/cmake/Modules/EttercapLibCheck.cmake	2015-03-14 14:43:11.000000000 +0100
++++ b/cmake/Modules/EttercapLibCheck.cmake	2015-10-16 16:28:39.891064759 +0200
+@@ -114,6 +114,23 @@
+ endif(HAVE_ICONV)
+ 
+ 
++if(ANDROID)
++  FIND_LIBRARY(HAVE_BTHREAD bthread)
++  if(HAVE_BTHREAD)
++    set(EC_LIBS ${EC_LIBS} ${HAVE_BTHREAD})
++    set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_BTHREAD})
++  else(HAVE_BTHREAD)
++    message(FATAL_ERROR "libbthread not found")
++  endif(HAVE_BTHREAD)
++  
++  FIND_LIBRARY(HAVE_IFADDRS ifaddrs)
++  if(HAVE_IFADDRS)
++    set(EC_LIBS ${EC_LIBS} ${HAVE_IFADDRS})
++    set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_IFADDRS})
++  else(HAVE_IFADDRS)
++    message(FATAL_ERROR "libifaddrs not found")
++  endif(HAVE_IFADDRS)
++endif(ANDROID)
+ 
+ # LTDL
+ if(ENABLE_PLUGINS)
+@@ -236,10 +253,10 @@
+     set(EC_LIBETTERCAP_LIBS ${EC_LIBETTERCAP_LIBS} ${HAVE_RESOLV})
+     set(HAVE_DN_EXPAND 1 CACHE PATH "Found dn_expand")
+ else(HAVE_RESOLV)
+-    if(OS_BSD)
++    if(OS_BSD OR ANDROID)
+         # FreeBSD has dn_expand built in libc
+         CHECK_FUNCTION_EXISTS(dn_expand HAVE_DN_EXPAND)
+-    endif(OS_BSD)
++    endif(OS_BSD OR ANDROID)
+ endif(HAVE_RESOLV)
+ 
+ find_package(PCRE)
+diff -uNr a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2015-03-14 14:43:11.000000000 +0100
++++ b/CMakeLists.txt	2015-10-16 16:24:19.748052232 +0200
+@@ -6,6 +6,10 @@
+ set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+ set(CMAKE_SCRIPT_PATH "${CMAKE_SOURCE_DIR}/cmake/Scripts")
+ 
++if(BOTBREW_BUILD)
++  list( APPEND CMAKE_FIND_ROOT_PATH ${BOTBREW_SYSDIR} )
++endif(BOTBREW_BUILD)
++
+ include(MacroEnsureOutOfSourceBuild)
+ macro_ensure_out_of_source_build("${PROJECT_NAME} requires an out of source build. Please create a separate build directory and run 'cmake /path/to/${PROJECT_NAME} [options]' there.")
+ 
+diff -uNr a/include/ec_resolv.h b/include/ec_resolv.h
+--- a/include/ec_resolv.h	2015-03-14 14:43:11.000000000 +0100
++++ b/include/ec_resolv.h	2015-10-16 16:29:29.810067162 +0200
+@@ -45,6 +45,12 @@
+ EC_API_EXTERN void resolv_cache_insert_passive(struct ip_addr *ip, char *name);
+    
+ 
++#if (defined(ANDROID) || defined(__BIONIC__)) && !defined(dn_comp)
++/* Android expose system __dn_comp from KitKat, not before */
++#define dn_comp __dn_comp
++extern int dn_comp(const char*, u_char*, int, u_char**, u_char**);
++extern int dn_expand(const u_char*, const u_char*, const u_char*, char*, int);
++#endif
+    
+ #endif
+ 
+diff -uNr a/include/ec_threads.h b/include/ec_threads.h
+--- a/include/ec_threads.h	2015-03-14 14:43:11.000000000 +0100
++++ b/include/ec_threads.h	2015-10-14 01:26:57.208658434 +0200
+@@ -3,6 +3,9 @@
+ 
+ #include <ec_stdint.h>
+ #include <pthread.h>
++#if (defined(__BIONIC__) || defined(ANDROID))
++# include <bthread.h>
++#endif
+ 
+ struct ec_thread {
+    char *name;
+diff -uNr a/src/ec_ui.c b/src/ec_ui.c
+--- a/src/ec_ui.c	2015-03-14 14:43:11.000000000 +0100
++++ b/src/ec_ui.c	2015-10-14 00:53:14.435561034 +0200
+@@ -21,9 +21,9 @@
+ 
+ #include <ec.h>
+ #include <ec_ui.h>
++#include <ec_threads.h>
+ 
+ #include <stdarg.h>
+-#include <pthread.h>
+ 
+ /* globals */
+ 

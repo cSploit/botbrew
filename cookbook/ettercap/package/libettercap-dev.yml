@@ -1,0 +1,17 @@
+Package: libettercap-dev
+Version: 0.0.0-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: https://ettercap.github.io/ettercap/
+Description: |
+ Ettercap is a comprehensive suite for man in the middle attacks.
+ It features sniffing of live connections, content filtering on the fly and many other interesting tricks.
+ It supports active and passive dissection of many protocols and includes many features for network and host analysis.
+Depends: libettercap
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${PACKAGE}${PREFIX}/lib/
