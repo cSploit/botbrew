@@ -1,0 +1,15 @@
+Package: libbthread-dev
+Version: 0.2-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: https://github.com/tux-mind/libbthread
+Description: |
+ library that provide some missing posix threading function to the bionic libc.
+Depends: libbthread
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${EXPORT}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/
