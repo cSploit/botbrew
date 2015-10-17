@@ -94,6 +94,9 @@ botbrew_unpack() {
 			*.tar.xz)
 				mkdir -p "${DST}" && tar -C "${DST}" -Jxf "${SRC}"
 				;;
+			*.tar)
+				mkdir -p "${DST}" && tar -C "${DST}" -xf "${SRC}"
+				;;
 			*)
 				echo 1>&2 "Don't know how to unpack \`$1'"
 				return 1
