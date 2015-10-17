@@ -1,0 +1,342 @@
+diff -uNr a/src/libnids.c b/src/libnids.c
+--- a/src/libnids.c	2010-03-01 22:13:25.000000000 +0100
++++ b/src/libnids.c	2015-10-17 14:08:27.772031057 +0200
+@@ -146,8 +146,8 @@
+ 	if (errnum != NIDS_WARN_TCP_HDR)
+ 	    syslog(nids_params.syslog_level,
+ 		   "%s,from %s:%hu to  %s:%hu\n", nids_warnings[errnum],
+-		   saddr, ntohs(((struct tcphdr *) data)->th_sport), daddr,
+-		   ntohs(((struct tcphdr *) data)->th_dport));
++		   saddr, ntohs(((struct tcphdr *) data)->source), daddr,
++		   ntohs(((struct tcphdr *) data)->dest));
+ 	else
+ 	    syslog(nids_params.syslog_level, "%s,from %s to %s\n",
+ 		   nids_warnings[errnum], saddr, daddr);
+diff -uNr a/src/Makefile.in b/src/Makefile.in
+--- a/src/Makefile.in	2010-03-01 22:13:17.000000000 +0100
++++ b/src/Makefile.in	2015-10-17 19:28:39.042508145 +0200
+@@ -6,7 +6,7 @@
+ srcdir		= @srcdir@
+ VPATH		= @srcdir@
+ 
+-install_prefix	=
++INSTALL_PREFIX	=
+ prefix		= @prefix@
+ exec_prefix	= @exec_prefix@
+ includedir	= @includedir@
+@@ -32,52 +32,33 @@
+ 
+ OBJS		= checksum.o ip_fragment.o ip_options.o killtcp.o \
+ 		  libnids.o scan.o tcp.o util.o allpromisc.o hash.o
+-OBJS_SHARED	= $(OBJS:.o=_pic.o)
++OBJS_SHARED	= $(OBJS:.o=.pic.o)
+ .c.o:
+-	$(CC) -c $(CFLAGS) -I. $(LIBS_CFLAGS) $<
++	$(CC) -c $(CFLAGS) -I. -I$(srcdir) $(LIBS_CFLAGS) $<
++	
+ static: $(LIBSTATIC)
+ shared: $(LIBSHARED)
+-# How to write the following rules compactly and portably ? 
+-# gmake accepts "%_pic.o: %.c", bsd make does not.
+-checksum_pic.o: checksum.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c checksum.c -o $@
+-ip_fragment_pic.o: ip_fragment.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c ip_fragment.c -o $@
+-ip_options_pic.o: ip_options.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c ip_options.c -o $@
+-killtcp_pic.o: killtcp.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c killtcp.c -o $@
+-libnids_pic.o: libnids.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c libnids.c -o $@
+-scan_pic.o: scan.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c scan.c -o $@
+-tcp_pic.o: tcp.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c tcp.c -o $@
+-util_pic.o: util.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c util.c -o $@
+-allpromisc_pic.o: allpromisc.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c allpromisc.c -o $@
+-hash_pic.o: hash.c
+-	$(CC) -fPIC $(CFLAGS) -I. $(LIBS_CFLAGS) -c hash.c -o $@
+-
+ 
++%.pic.o: %.c
++	$(CC) -fPIC $(CFLAGS) -I. -I$(srcdir) $(LIBS_CFLAGS) -c $(srcdir)/$< -o $@
++	
+ $(LIBSTATIC): $(OBJS)
+-	ar -cr $@ $(OBJS)
++	$(AR) -cr $@ $(OBJS)
+ 	$(RANLIB) $@
+ $(LIBSHARED): $(OBJS_SHARED)
+-	$(CC) -shared -Wl,-soname,$(LIBSHARED) -o $(LIBSHARED) $(OBJS_SHARED) $(LIBS) $(LNETLIB) $(PCAPLIB)
++	$(CC) -shared -Wl,-soname,$(LIBSHARED) $(LDFLAGS) -o $(LIBSHARED) $(OBJS_SHARED) $(LIBS) $(LNETLIB) $(PCAPLIB)
+ 
+ _install install: $(LIBSTATIC)
+-	../mkinstalldirs $(install_prefix)$(libdir)
+-	../mkinstalldirs $(install_prefix)$(includedir)
+-	../mkinstalldirs $(install_prefix)$(mandir)/man3
+-	$(INSTALL) -c -m 644 libnids.a $(install_prefix)$(libdir)
+-	$(INSTALL) -c -m 644 nids.h $(install_prefix)$(includedir)
+-	$(INSTALL) -c -m 644 libnids.3 $(install_prefix)$(mandir)/man3
++	$(srcdir)/../mkinstalldirs $(INSTALL_PREFIX)$(libdir)
++	$(srcdir)/../mkinstalldirs $(INSTALL_PREFIX)$(includedir)
++	$(srcdir)/../mkinstalldirs $(INSTALL_PREFIX)$(mandir)/man3
++	$(INSTALL) -c -m 644 libnids.a $(INSTALL_PREFIX)$(libdir)
++	$(INSTALL) -c -m 644 $(srcdir)/nids.h $(INSTALL_PREFIX)$(includedir)
++	$(INSTALL) -c -m 644 $(srcdir)/libnids.3 $(INSTALL_PREFIX)$(mandir)/man3
+ _installshared installshared: install $(LIBSHARED)
+-	$(INSTALL) -c -m 755 $(LIBSHARED) $(install_prefix)$(libdir)
+-	ln -s -f $(LIBSHARED) $(install_prefix)$(libdir)/libnids.so
+- 
++	$(INSTALL) -c -m 755 $(LIBSHARED) $(INSTALL_PREFIX)$(libdir)
++	ln -s -f $(LIBSHARED) $(INSTALL_PREFIX)$(libdir)/libnids.so
++
+ clean:
+ 	rm -f *.o *~ $(LIBSTATIC) $(LIBSHARED)
+ 
+diff -uNr a/src/scan.c b/src/scan.c
+--- a/src/scan.c	2010-03-01 10:52:47.000000000 +0100
++++ b/src/scan.c	2015-10-17 14:01:54.813012135 +0200
+@@ -114,10 +114,10 @@
+   this_host->modtime = gettime();
+   for (i = 0; i < this_host->n_packets; i++)
+     if (this_host->packets[i].addr == iph->ip_dst.s_addr &&
+-	this_host->packets[i].port == ntohs(th->th_dport))
++	this_host->packets[i].port == ntohs(th->dest))
+       return;
+   this_host->packets[this_host->n_packets].addr = iph->ip_dst.s_addr;
+-  this_host->packets[this_host->n_packets].port = ntohs(th->th_dport);
++  this_host->packets[this_host->n_packets].port = ntohs(th->dest);
+   this_host->packets[this_host->n_packets].flags = *((unsigned char *) (th) + 13);
+   this_host->n_packets++;
+   if (this_host->n_packets > nids_params.scan_num_ports) {
+diff -uNr a/src/tcp.c b/src/tcp.c
+--- a/src/tcp.c	2010-03-14 11:16:15.000000000 +0100
++++ b/src/tcp.c	2015-10-17 18:49:28.356394956 +0200
+@@ -194,7 +194,7 @@
+ 
+ static int get_ts(struct tcphdr * this_tcphdr, unsigned int * ts)
+ {
+-  int len = 4 * this_tcphdr->th_off;
++  int len = 4 * this_tcphdr->doff;
+   unsigned int tmp_ts;
+   unsigned char * options = (unsigned char*)(this_tcphdr + 1);
+   int ind = 0, ret = 0;
+@@ -221,7 +221,7 @@
+ 
+ static int get_wscale(struct tcphdr * this_tcphdr, unsigned int * ws)
+ {
+-  int len = 4 * this_tcphdr->th_off;
++  int len = 4 * this_tcphdr->doff;
+   unsigned int tmp_ws;
+   unsigned char * options = (unsigned char*)(this_tcphdr + 1);
+   int ind = 0, ret = 0;
+@@ -260,8 +260,8 @@
+   int hash_index;
+   struct tuple4 addr;
+   
+-  addr.source = ntohs(this_tcphdr->th_sport);
+-  addr.dest = ntohs(this_tcphdr->th_dport);
++  addr.source = ntohs(this_tcphdr->source);
++  addr.dest = ntohs(this_tcphdr->dest);
+   addr.saddr = this_iphdr->ip_src.s_addr;
+   addr.daddr = this_iphdr->ip_dst.s_addr;
+   hash_index = mk_hash_index(addr);
+@@ -289,9 +289,9 @@
+   a_tcp->hash_index = hash_index;
+   a_tcp->addr = addr;
+   a_tcp->client.state = TCP_SYN_SENT;
+-  a_tcp->client.seq = ntohl(this_tcphdr->th_seq) + 1;
++  a_tcp->client.seq = ntohl(this_tcphdr->seq) + 1;
+   a_tcp->client.first_data_seq = a_tcp->client.seq;
+-  a_tcp->client.window = ntohs(this_tcphdr->th_win);
++  a_tcp->client.window = ntohs(this_tcphdr->window);
+   a_tcp->client.ts_on = get_ts(this_tcphdr, &a_tcp->client.curr_ts);
+   a_tcp->client.wscale_on = get_wscale(this_tcphdr, &a_tcp->client.wscale);
+   a_tcp->server.state = TCP_CLOSE;
+@@ -495,7 +495,7 @@
+ 	  char *data, int datalen, int skblen
+ 	  )
+ {
+-  u_int this_seq = ntohl(this_tcphdr->th_seq);
++  u_int this_seq = ntohl(this_tcphdr->seq);
+   struct skbuff *pakiet, *tmp;
+   
+   /*
+@@ -503,13 +503,13 @@
+    */
+   
+   if (!after(this_seq, EXP_SEQ)) {
+-    if (after(this_seq + datalen + (this_tcphdr->th_flags & TH_FIN), EXP_SEQ)) {
++    if (after(this_seq + datalen + this_tcphdr->fin, EXP_SEQ)) {
+       /* the packet straddles our window end */
+       get_ts(this_tcphdr, &snd->curr_ts);
+       add_from_skb(a_tcp, rcv, snd, (u_char *)data, datalen, this_seq,
+-		   (this_tcphdr->th_flags & TH_FIN),
+-		   (this_tcphdr->th_flags & TH_URG),
+-		   ntohs(this_tcphdr->th_urp) + this_seq - 1);
++		   this_tcphdr->fin,
++		   this_tcphdr->urg,
++		   ntohs(this_tcphdr->urg_ptr) + this_seq - 1);
+       /*
+        * Do we have any old packets to ack that the above
+        * made visible? (Go forward from skb)
+@@ -552,7 +552,7 @@
+     if (!pakiet->data)
+       nids_params.no_mem("tcp_queue");
+     memcpy(pakiet->data, data, datalen);
+-    pakiet->fin = (this_tcphdr->th_flags & TH_FIN);
++    pakiet->fin = this_tcphdr->fin;
+     /* Some Cisco - at least - hardware accept to close a TCP connection
+      * even though packets were lost before the first TCP FIN packet and
+      * never retransmitted; this violates RFC 793, but since it really
+@@ -567,8 +567,8 @@
+ 	add_tcp_closing_timeout(a_tcp);
+     }
+     pakiet->seq = this_seq;
+-    pakiet->urg = (this_tcphdr->th_flags & TH_URG);
+-    pakiet->urg_ptr = ntohs(this_tcphdr->th_urp);
++    pakiet->urg = this_tcphdr->urg;
++    pakiet->urg_ptr = ntohs(this_tcphdr->urg_ptr);
+     for (;;) {
+       if (!p || !after(p->seq, this_seq))
+ 	break;
+@@ -639,8 +639,8 @@
+   struct tuple4 this_addr, reversed;
+   struct tcp_stream *a_tcp;
+ 
+-  this_addr.source = ntohs(this_tcphdr->th_sport);
+-  this_addr.dest = ntohs(this_tcphdr->th_dport);
++  this_addr.source = ntohs(this_tcphdr->source);
++  this_addr.dest = ntohs(this_tcphdr->dest);
+   this_addr.saddr = this_iphdr->ip_src.s_addr;
+   this_addr.daddr = this_iphdr->ip_dst.s_addr;
+   a_tcp = nids_find_tcp_stream(&this_addr);
+@@ -648,8 +648,8 @@
+     *from_client = 1;
+     return a_tcp;
+   }
+-  reversed.source = ntohs(this_tcphdr->th_dport);
+-  reversed.dest = ntohs(this_tcphdr->th_sport);
++  reversed.source = ntohs(this_tcphdr->dest);
++  reversed.dest = ntohs(this_tcphdr->source);
+   reversed.saddr = this_iphdr->ip_dst.s_addr;
+   reversed.daddr = this_iphdr->ip_src.s_addr;
+   a_tcp = nids_find_tcp_stream(&reversed);
+@@ -723,7 +723,7 @@
+     return;
+   } // ktos sie bawi
+   
+-  datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->th_off;
++  datalen = iplen - 4 * this_iphdr->ip_hl - 4 * this_tcphdr->doff;
+   
+   if (datalen < 0) {
+     nids_params.syslog(NIDS_WARN_TCP, NIDS_WARN_TCP_HDR, this_iphdr,
+@@ -736,7 +736,7 @@
+ 		       this_tcphdr);
+     return;
+   }
+-  if (!(this_tcphdr->th_flags & TH_ACK))
++  if (!(this_tcphdr->ack))
+     detect_scan(this_iphdr);
+   if (!nids_params.n_tcp_streams) return;
+   if (my_tcp_check(this_tcphdr, iplen - 4 * this_iphdr->ip_hl,
+@@ -750,9 +750,9 @@
+ //ECN
+ #endif
+   if (!(a_tcp = find_stream(this_tcphdr, this_iphdr, &from_client))) {
+-    if ((this_tcphdr->th_flags & TH_SYN) &&
+-	!(this_tcphdr->th_flags & TH_ACK) &&
+-	!(this_tcphdr->th_flags & TH_RST))
++    if (this_tcphdr->syn &&
++	!(this_tcphdr->ack) &&
++	!(this_tcphdr->rst))
+       add_new_tcp(this_tcphdr, this_iphdr);
+     return;
+   }
+@@ -764,17 +764,17 @@
+     rcv = &a_tcp->client;
+     snd = &a_tcp->server;
+   }
+-  if ((this_tcphdr->th_flags & TH_SYN)) {
++  if (this_tcphdr->syn) {
+     if (from_client || a_tcp->client.state != TCP_SYN_SENT ||
+-      a_tcp->server.state != TCP_CLOSE || !(this_tcphdr->th_flags & TH_ACK))
++      a_tcp->server.state != TCP_CLOSE || !(this_tcphdr->ack))
+       return;
+-    if (a_tcp->client.seq != ntohl(this_tcphdr->th_ack))
++    if (a_tcp->client.seq != ntohl(this_tcphdr->ack_seq))
+       return;
+     a_tcp->server.state = TCP_SYN_RECV;
+-    a_tcp->server.seq = ntohl(this_tcphdr->th_seq) + 1;
++    a_tcp->server.seq = ntohl(this_tcphdr->seq) + 1;
+     a_tcp->server.first_data_seq = a_tcp->server.seq;
+-    a_tcp->server.ack_seq = ntohl(this_tcphdr->th_ack);
+-    a_tcp->server.window = ntohs(this_tcphdr->th_win);
++    a_tcp->server.ack_seq = ntohl(this_tcphdr->ack_seq);
++    a_tcp->server.window = ntohs(this_tcphdr->window);
+     if (a_tcp->client.ts_on) {
+     	a_tcp->server.ts_on = get_ts(this_tcphdr, &a_tcp->server.curr_ts);
+ 	if (!a_tcp->server.ts_on)
+@@ -794,15 +794,15 @@
+     return;
+   }
+   if (
+-  	! (  !datalen && ntohl(this_tcphdr->th_seq) == rcv->ack_seq  )
++  	! (  !datalen && ntohl(this_tcphdr->seq) == rcv->ack_seq  )
+   	&&
+-  	( !before(ntohl(this_tcphdr->th_seq), rcv->ack_seq + rcv->window*rcv->wscale) ||
+-          before(ntohl(this_tcphdr->th_seq) + datalen, rcv->ack_seq)  
++  	( !before(ntohl(this_tcphdr->seq), rcv->ack_seq + rcv->window*rcv->wscale) ||
++          before(ntohl(this_tcphdr->seq) + datalen, rcv->ack_seq)  
+         )
+      )     
+      return;
+ 
+-  if ((this_tcphdr->th_flags & TH_RST)) {
++  if (this_tcphdr->rst) {
+     if (a_tcp->nids_state == NIDS_DATA) {
+       struct lurker_node *i;
+ 
+@@ -819,12 +819,12 @@
+   	before(tmp_ts, snd->curr_ts))
+   return; 	
+   
+-  if ((this_tcphdr->th_flags & TH_ACK)) {
++  if (this_tcphdr->ack) {
+     if (from_client && a_tcp->client.state == TCP_SYN_SENT &&
+ 	a_tcp->server.state == TCP_SYN_RECV) {
+-      if (ntohl(this_tcphdr->th_ack) == a_tcp->server.seq) {
++      if (ntohl(this_tcphdr->ack_seq) == a_tcp->server.seq) {
+ 	a_tcp->client.state = TCP_ESTABLISHED;
+-	a_tcp->client.ack_seq = ntohl(this_tcphdr->th_ack);
++	a_tcp->client.ack_seq = ntohl(this_tcphdr->ack_seq);
+ 	{
+ 	  struct proc_node *i;
+ 	  struct lurker_node *j;
+@@ -877,8 +877,8 @@
+       // return;
+     }
+   }
+-  if ((this_tcphdr->th_flags & TH_ACK)) {
+-    handle_ack(snd, ntohl(this_tcphdr->th_ack));
++  if (this_tcphdr->ack) {
++    handle_ack(snd, ntohl(this_tcphdr->ack_seq));
+     if (rcv->state == FIN_SENT)
+       rcv->state = FIN_CONFIRMED;
+     if (rcv->state == FIN_CONFIRMED && snd->state == FIN_CONFIRMED) {
+@@ -891,11 +891,11 @@
+       return;
+     }
+   }
+-  if (datalen + (this_tcphdr->th_flags & TH_FIN) > 0)
++  if (datalen + this_tcphdr->fin > 0)
+     tcp_queue(a_tcp, this_tcphdr, snd, rcv,
+-	      (char *) (this_tcphdr) + 4 * this_tcphdr->th_off,
++	      (char *) (this_tcphdr) + 4 * this_tcphdr->doff,
+ 	      datalen, skblen);
+-  snd->window = ntohs(this_tcphdr->th_win);
++  snd->window = ntohs(this_tcphdr->window);
+   if (rcv->rmem_alloc > 65535)
+     prune_queue(rcv, this_tcphdr);
+   if (!a_tcp->listeners)

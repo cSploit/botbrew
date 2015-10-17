@@ -1,0 +1,16 @@
+Package: libnids-dev
+Version: 1.24-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: http://libnids.sourceforge.net/
+Description: |
+ Libnids is an implementation of an E-component of Network Intrusion Detection System.
+ It emulates the IP stack of Linux 2.0.x. Libnids offers IP defragmentation, TCP stream assembly and TCP port scan detection.
+Depends: libnids
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${PACKAGE}${PREFIX}/lib/
