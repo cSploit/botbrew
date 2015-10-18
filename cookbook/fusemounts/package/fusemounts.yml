@@ -1,0 +1,12 @@
+Package: fusemounts
+Version: 1.0-0
+Architecture: armeabi
+Section: utils
+Priority: optional
+Source: https://github.com/tux-mind/fusemounts
+Description: |
+ list FUSE directory bindings
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    cp -r ${EXPORT}${PREFIX}/bin ${PACKAGE}${PREFIX}/
