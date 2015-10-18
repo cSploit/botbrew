@@ -1,0 +1,13 @@
+Package: arpspoof
+Version: 0.1-0
+Architecture: armeabi
+Section: net
+Priority: optional
+Source: https://github.com/cSploit/arpspoof
+Description: |
+ cSploit ArpSpoof native module
+Depends: libpcap, libnet
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    cp -r ${EXPORT}${PREFIX}/bin ${PACKAGE}${PREFIX}/
