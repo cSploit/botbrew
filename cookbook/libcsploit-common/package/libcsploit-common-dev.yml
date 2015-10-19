@@ -1,0 +1,15 @@
+Package: libcsploit-common-dev
+Version: 1.0-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: https://github.com/cSploit/common
+Description: |
+ use this library to deal with the cSploit daemon
+Depends: libcsploit-common
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${EXPORT}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/
