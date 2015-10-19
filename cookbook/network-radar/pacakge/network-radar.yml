@@ -1,0 +1,14 @@
+Package: network-radar
+Version: 1.0-0
+Architecture: armeabi
+Section: net
+Priority: optional
+Source: https://github.com/cSploit/network-radar
+Description: |
+ network-radar is the native replacement for the old dSploit NetworkDiscovery .
+ it is completely written in C, using threads for faster execution and libcares for asynchronous name resolving.
+Depends: libpcap, libcares, libcsploit-common
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    cp -r ${EXPORT}${PREFIX}/bin ${PACKAGE}${PREFIX}/
