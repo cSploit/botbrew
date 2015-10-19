@@ -1,0 +1,13 @@
+Package: libcares-doc
+Version: 1.10.0-0
+Architecture: all
+Section: doc
+Priority: optional
+Source: http://c-ares.haxx.se/
+Description: |
+ This is c-ares, an asynchronous resolver library.
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/share
+    cp -r ${EXPORT}${PREFIX}/share/man ${PACKAGE}${PREFIX}/share/

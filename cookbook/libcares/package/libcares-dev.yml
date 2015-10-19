@@ -1,0 +1,15 @@
+Package: libcares-dev
+Version: 1.10.0-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: http://c-ares.haxx.se/
+Description: |
+ This is c-ares, an asynchronous resolver library.
+Depends: libcares
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${EXPORT}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/
