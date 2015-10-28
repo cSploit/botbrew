@@ -17,7 +17,7 @@ botbrew_do_build() {
 			mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
 			CPPFLAGS="${G_CPPFLAGS}" CFLAGS="${G_ALL_CFLAGS}" CXXFLAGS="${G_ALL_CXXFLAGS}" \
 			../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
-				--with-shared --enable-termcap
+				--with-shared --enable-termcap --enable-overwrite
 			# nb: Android's broken locale implementation results in errors such as
 			#     'struct lconv' has no member named 'decimal_point'
 			# fix: undefine HAVE_LOCALE_H in include/ncurses_cfg.h
