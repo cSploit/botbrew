@@ -1,0 +1,40 @@
+#!/bin/bash
+if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
+
+PACKAGE_NAME=$(basename $(pwd))
+PACKAGE_VERSION=8.1
+PACKAGE_DEPEND=(pcre ncurses openssl)
+
+FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
+ARCHIVE=${FULLNAME}.tar.gz
+
+botbrew_do_build() {
+  botbrew_download http://www.thc.org/releases/${ARCHIVE} ${ARCHIVE}
+  botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
+  botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+  botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}-android.patch
+  botbrew_import
+
+  if ! [ -e ${G_OBJECT}/Makefile ]; then
+    mkdir -p ${G_OBJECT}
+    cp ${G_SOURCE}/Makefile ${G_OBJECT}/
+  fi
+
+  if ! [ -e ${G_OBJECT}/hydra ]; then
+    XCPPFLAGS="-DLIBOPENSSL -DLIBNCURSES -DHAVE_PCRE -DHAVE_MATH_H -DNO_RINDEX -DNO_RSA_LEGACY"
+    XLDFLAGS="-lcurses -lssl -lpcre -lcrypto -lm"
+    SEC_CFLAGS="-pie -fPIE -fstack-protector-all --param ssp-buffer-size=4 -D_FORTIFY_SOURCE=2 -Wl,-z,now -Wl,-z,relro"
+    make -C ${G_OBJECT} hydra \
+    CPPFLAGS="-I${G_INCDIR} -I$(pwd)/${G_SOURCE} ${XCPPFLAGS}" CFLAGS="${G_CPPFLAGS} ${G_ALL_CFLAGS} ${SEC_CFLAGS}" \
+    LDFLAGS="-L${G_LIBDIR} ${XLDFLAGS}" PREFIX=${G_INSTALLPREFIX} CC=${G_CC} LD=${G_LD} \
+    SRCDIR=$(pwd)/${G_SOURCE}
+  fi
+
+  if ! [ -e ${G_EXPORT}/.d ]; then
+    ${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT} \
+    PREFIX=${G_INSTALLPREFIX} STRIP=${G_STRIP} SRCDIR=$(pwd)/${G_SOURCE}
+    botbrew_fix_interpreter_path ${G_EXPORT}
+    ${G_STRIP} --strip-unneeded ${G_EXP_BINDIR}/* || true
+    touch ${G_EXPORT}/.d
+  fi
+}

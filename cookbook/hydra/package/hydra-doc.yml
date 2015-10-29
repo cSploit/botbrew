@@ -1,0 +1,15 @@
+Package: hydra-doc
+Version: 8.1-0
+Architecture: all
+Section: doc
+Priority: optional
+Source: http://www.thc.org/
+Description: |
+ This tool is a proof of concept code, to give researchers and security
+ consultants the possiblity to show how easy it would be to gain unauthorized
+ access from remote to a system.
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/share
+    cp -r ${EXPORT}${PREFIX}/share/man ${PACKAGE}${PREFIX}/share/

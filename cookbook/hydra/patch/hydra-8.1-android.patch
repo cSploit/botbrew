@@ -1,0 +1,245 @@
+diff -uNr a/hydra-telnet.c b/hydra-telnet.c
+--- a/hydra-telnet.c	2014-12-07 15:50:24.000000000 +0100
++++ b/hydra-telnet.c	2015-10-29 01:19:16.147379103 +0100
+@@ -1,5 +1,33 @@
+ #include "hydra-mod.h"
++#ifdef HAVE_ARPA_TELNET_H
+ #include <arpa/telnet.h>
++#else
++/*
++ * Definitions for the TELNET protocol.
++ */
++#define IAC     255             /* interpret as command: */
++#define DONT    254             /* you are not to use option */
++#define DO      253             /* please, you use option */
++#define WONT    252             /* I won't use option */
++#define WILL    251             /* I will use option */
++#define SB      250             /* interpret as subnegotiation */
++#define GA      249             /* you may reverse the line */
++#define EL      248             /* erase the current line */
++#define EC      247             /* erase the current character */
++#define AYT     246             /* are you there */
++#define AO      245             /* abort output--but let prog finish */
++#define IP      244             /* interrupt process--permanently */
++#define BREAK   243             /* break */
++#define DM      242             /* data mark--for connect. cleaning */
++#define NOP     241             /* nop */
++#define SE      240             /* end sub negotiation */
++#define EOR     239             /* end of record (transparent mode) */
++#define ABORT   238             /* Abort process */
++#define SUSP    237             /* Suspend process */
++#define xEOF    236             /* End of file: EOF is already used... */
++
++#define SYNCH   242             /* for telfunc calls */
++#endif
+ 
+ extern char *HYDRA_EXIT;
+ char *buf;
+diff -uNr a/Makefile b/Makefile
+--- a/Makefile	2014-12-07 15:50:24.000000000 +0100
++++ b/Makefile	2015-10-29 01:20:53.760383804 +0100
+@@ -1,5 +1,35 @@
+-all:
+-	@echo Error: you must run "./configure" first
++CC       ?= gcc
++SRCDIR   ?= ./
++CFLAGS   ?= -O3
++CPPFLAGS ?= -I$(SRCDIR)
++LDFLAGS  ?= -lm
++DESTDIR  ?= /
++PREFIX   ?= /usr/local
++STRIP    ?= strip
++INSTALL  ?= install -c
++SED      ?= sed
++
++SRCS:=$(filter-out pw-inspector.c, $(notdir $(wildcard $(SRCDIR)/*.c)))
++OBJS:=$(SRCS:.c=.o)
++
++BINS = hydra
++
++hydra:	$(OBJS)
++	$(CC) $(CFLAGS) $(CPPFLAGS) -o hydra $^ $(LDFLAGS)
++	
++%.o:	$(SRCDIR)/%.c
++	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
++
++strip:	hydra
++	$(STRIP) $(BINS)
++
++install: strip
++	mkdir -p $(DESTDIR)$(PREFIX)/bin $(DESTDIR)$(PREFIX)/etc $(DESTDIR)$(PREFIX)/share/man/man1
++	$(INSTALL) -m 755 $(SRCDIR)/dpl4hydra.sh $(SRCDIR)/hydra-wizard.sh $(BINS) $(DESTDIR)$(PREFIX)/bin/
++	$(SED) -i -e "s|^INSTALLDIR=.*|INSTALLDIR="$(PREFIX)"|" $(DESTDIR)$(PREFIX)/bin/dpl4hydra.sh
++	cp -f $(SRCDIR)/*.csv $(DESTDIR)$(PREFIX)/etc/
++	cp -f $(SRCDIR)/hydra.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+ 
+ clean:
+-	cp -f Makefile.orig Makefile
++	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
++
+diff -uNr a/.patch.hydra-8.1-android.patch b/.patch.hydra-8.1-android.patch
+--- a/.patch.hydra-8.1-android.patch	1970-01-01 01:00:00.000000000 +0100
++++ b/.patch.hydra-8.1-android.patch	2015-10-29 01:19:16.148379103 +0100
+@@ -0,0 +1,162 @@
++diff -uNr a/hydra-telnet.c b/hydra-telnet.c
++--- a/hydra-telnet.c	2014-12-07 15:50:24.000000000 +0100
+++++ b/hydra-telnet.c	2015-10-29 01:08:24.682347734 +0100
++@@ -1,5 +1,33 @@
++ #include "hydra-mod.h"
+++#ifdef HAVE_ARPA_TELNET_H
++ #include <arpa/telnet.h>
+++#else
+++/*
+++ * Definitions for the TELNET protocol.
+++ */
+++#define IAC     255             /* interpret as command: */
+++#define DONT    254             /* you are not to use option */
+++#define DO      253             /* please, you use option */
+++#define WONT    252             /* I won't use option */
+++#define WILL    251             /* I will use option */
+++#define SB      250             /* interpret as subnegotiation */
+++#define GA      249             /* you may reverse the line */
+++#define EL      248             /* erase the current line */
+++#define EC      247             /* erase the current character */
+++#define AYT     246             /* are you there */
+++#define AO      245             /* abort output--but let prog finish */
+++#define IP      244             /* interrupt process--permanently */
+++#define BREAK   243             /* break */
+++#define DM      242             /* data mark--for connect. cleaning */
+++#define NOP     241             /* nop */
+++#define SE      240             /* end sub negotiation */
+++#define EOR     239             /* end of record (transparent mode) */
+++#define ABORT   238             /* Abort process */
+++#define SUSP    237             /* Suspend process */
+++#define xEOF    236             /* End of file: EOF is already used... */
+++
+++#define SYNCH   242             /* for telfunc calls */
+++#endif
++ 
++ extern char *HYDRA_EXIT;
++ char *buf;
++diff -uNr a/Makefile b/Makefile
++--- a/Makefile	2014-12-07 15:50:24.000000000 +0100
+++++ b/Makefile	2015-10-29 01:18:40.528377388 +0100
++@@ -1,5 +1,35 @@
++-all:
++-	@echo Error: you must run "./configure" first
+++CC       ?= gcc
+++SRCDIR   ?= ./
+++CFLAGS   ?= -O3
+++CPPFLAGS ?= -I$(SRCDIR)
+++LDFLAGS  ?= -lm
+++DESTDIR  ?= /
+++PREFIX   ?= /usr/local
+++STRIP    ?= strip
+++INSTALL  ?= install -c
+++SED      ?= sed
+++
+++SRCS:=$(filter-out pw-inspector.c, $(notdir $(wildcard $(SRCDIR)/*.c)))
+++OBJS:=$(SRCS:.c=.o)
+++
+++BINS = hydra
+++
+++hydra:	$(OBJS)
+++	$(CC) $(CFLAGS) $(CPPFLAGS) -o hydra $^ $(LDFLAGS)
+++	
+++%.o:	$(SRCDIR)/%.c
+++	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
+++
+++strip:	hydra
+++	$(STRIP) $(BINS)
+++
+++install: strip
+++	-mkdir -p $(DESTDIR)$(PREFIX)/bin/ $(DESTDIR)$(PREFIX)/etc/ $(DESTDIR)$(PREFIX)/share/man/man1
+++	$(INSTALL) -m 755 $(SRCDIR)/dpl4hydra.sh $(SRCDIR)/hydra-wizard.sh $(BINS) $(DESTDIR)$(PREFIX)/bin/
+++	$(SED) -i -e "s|^INSTALLDIR=.*|INSTALLDIR="$(PREFIX)"|" $(DESTDIR)$(PREFIX)/bin/dpl4hydra.sh
+++	-cp -f $(SRCDIR)/*.csv $(DESTDIR)$(PREFIX)/etc/
+++	-cp -f $(SRCDIR)/hydra.1 $(DESTDIR)$(PREFIX)/share/man/man1
++ 
++ clean:
++-	cp -f Makefile.orig Makefile
+++	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
+++
++diff -uNr a/.patch.hydra-8.1-android.patch b/.patch.hydra-8.1-android.patch
++--- a/.patch.hydra-8.1-android.patch	1970-01-01 01:00:00.000000000 +0100
+++++ b/.patch.hydra-8.1-android.patch	2015-10-29 01:08:24.683347734 +0100
++@@ -0,0 +1,79 @@
+++diff -uNr a/hydra-telnet.c b/hydra-telnet.c
+++--- a/hydra-telnet.c	2014-12-07 15:50:24.000000000 +0100
++++++ b/hydra-telnet.c	2015-10-29 00:28:48.230233305 +0100
+++@@ -1,5 +1,33 @@
+++ #include "hydra-mod.h"
++++#ifdef HAVE_ARPA_TELNET_H
+++ #include <arpa/telnet.h>
++++#else
++++/*
++++ * Definitions for the TELNET protocol.
++++ */
++++#define IAC     255             /* interpret as command: */
++++#define DONT    254             /* you are not to use option */
++++#define DO      253             /* please, you use option */
++++#define WONT    252             /* I won't use option */
++++#define WILL    251             /* I will use option */
++++#define SB      250             /* interpret as subnegotiation */
++++#define GA      249             /* you may reverse the line */
++++#define EL      248             /* erase the current line */
++++#define EC      247             /* erase the current character */
++++#define AYT     246             /* are you there */
++++#define AO      245             /* abort output--but let prog finish */
++++#define IP      244             /* interrupt process--permanently */
++++#define BREAK   243             /* break */
++++#define DM      242             /* data mark--for connect. cleaning */
++++#define NOP     241             /* nop */
++++#define SE      240             /* end sub negotiation */
++++#define EOR     239             /* end of record (transparent mode) */
++++#define ABORT   238             /* Abort process */
++++#define SUSP    237             /* Suspend process */
++++#define xEOF    236             /* End of file: EOF is already used... */
++++
++++#define SYNCH   242             /* for telfunc calls */
++++#endif
+++ 
+++ extern char *HYDRA_EXIT;
+++ char *buf;
+++diff -uNr a/Makefile b/Makefile
+++--- a/Makefile	2014-12-07 15:50:24.000000000 +0100
++++++ b/Makefile	2015-10-29 01:05:25.536339108 +0100
+++@@ -1,5 +1,35 @@
+++-all:
+++-	@echo Error: you must run "./configure" first
++++CC       ?= gcc
++++SRCDIR   ?= ./
++++CFLAGS   ?= -O3
++++CPPFLAGS ?= -I$(SRCDIR)
++++LDFLAGS  ?= -lm
++++DESTDIR  ?= /
++++PREFIX   ?= /usr/local
++++STRIP    ?= strip
++++INSTALL  ?= install -c
++++SED      ?= sed
++++
++++SRCS:=$(filter-out pw-inspector.c, $(notdir $(wildcard $(SRCDIR)/*.c)))
++++OBJS:=$(SRCS:.c=.o)
++++
++++BINS = hydra
++++
++++hydra:	$(OBJS)
++++	$(CC) $(CFLAGS) $(CPPFLAGS) -o hydra $^ $(LDFLAGS)
++++	
++++%.o:	$(SRCDIR)/%.c
++++	$(CC) $(CFLAGS) $(CPPFLAGS) -c $<
++++
++++strip:	hydra
++++	$(STRIP) $(BINS)
++++
++++install: strip
++++	-mkdir -p $(DESTDIR)$(PREFIX)/bin/ $(DESTDIR)$(PREFIX)/etc/ $(DESTDIR)$(PREFIX)/man/man1
++++	$(INSTALL) -m 755 $(SRCDIR)/dpl4hydra.sh $(SRCDIR)/hydra-wizard.sh $(BINS) $(DESTDIR)$(PREFIX)/bin/
++++	$(SED) -i -e "s|^INSTALLDIR=.*|INSTALLDIR="$(PREFIX)"|" $(DESTDIR)$(PREFIX)/bin/dpl4hydra.sh
++++	-cp -f $(SRCDIR)/*.csv $(DESTDIR)$(PREFIX)/etc/
++++	-cp -f $(SRCDIR)/hydra.1 $(DESTDIR)$(PREFIX)/man/man1
+++ 
+++ clean:
+++-	cp -f Makefile.orig Makefile
++++	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
++++

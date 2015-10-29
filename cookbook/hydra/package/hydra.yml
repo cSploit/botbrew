@@ -1,0 +1,16 @@
+Package: hydra
+Version: 8.1-0
+Architecture: armeabi
+Section: net
+Priority: optional
+Source: http://www.thc.org/
+Description: |
+ This tool is a proof of concept code, to give researchers and security
+ consultants the possiblity to show how easy it would be to gain unauthorized
+ access from remote to a system.
+Depends: libssl, libpcre, libncurses
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    cp -r ${EXPORT}${PREFIX}/bin ${PACKAGE}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/etc ${PACKAGE}${PREFIX}/
