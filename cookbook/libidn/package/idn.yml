@@ -1,0 +1,17 @@
+Package: idn
+Version: 1.32-0
+Architecture: armeabi
+Section: i18n
+Priority: optional
+Source: https://www.gnu.org/software/libidn/
+Description: |
+  Command line and Emacs interface to GNU Libidn
+Depends: libidn
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/share
+    mkdir -p ${PACKAGE}${PREFIX}/share/man
+    cp -r ${EXPORT}${PREFIX}/bin ${PACKAGE}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/share/emacs ${PACKAGE}${PREFIX}/share/
+    cp -r ${EXPORT}${PREFIX}/share/man/man1 ${PACKAGE}${PREFIX}/share/man/

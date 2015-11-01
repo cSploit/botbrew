@@ -1,0 +1,13 @@
+Package: libidn-doc
+Version: 1.32-0
+Architecture: all
+Section: doc
+Priority: optional
+Source: https://www.gnu.org/software/libidn/
+Description: |
+ GNU Libidn library, implementation of IETF IDN specifications (documentation)
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/share/man
+    cp -r ${EXPORT}${PREFIX}/man/man3 ${PACKAGE}${PREFIX}/share/man/
