@@ -1,0 +1,15 @@
+Package: libssh-dev
+Version: 0.7.2-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: http://www.libssh.org/
+Description: |
+ tiny C SSH library. Development files (OpenSSL flavor)
+Depends: libssh
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${PACKAGE}${PREFIX}/lib/

@@ -1,0 +1,156 @@
+diff -uNr a/cmake/Modules/DefineCompilerFlags.cmake b/cmake/Modules/DefineCompilerFlags.cmake
+--- a/cmake/Modules/DefineCompilerFlags.cmake	2015-04-23 11:12:36.000000000 +0200
++++ b/cmake/Modules/DefineCompilerFlags.cmake	2015-11-02 11:40:02.738091620 +0100
+@@ -10,7 +10,7 @@
+     if (${CMAKE_C_COMPILER_ID} MATCHES "(GNU|Clang)")
+ 
+         # add -Wconversion ?
+-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -pedantic -pedantic-errors")
++        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99 -pedantic")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -Wshadow -Wmissing-prototypes -Wdeclaration-after-statement")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wunused -Wfloat-equal -Wpointer-arith -Wwrite-strings -Wformat-security")
+         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wmissing-format-attribute")
+diff -uNr a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2015-09-16 08:44:35.000000000 +0200
++++ b/CMakeLists.txt	2015-11-02 11:25:59.212051002 +0100
+@@ -27,6 +27,10 @@
+   ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules
+ )
+ 
++if(BOTBREW_BUILD)
++  list( APPEND CMAKE_FIND_ROOT_PATH ${BOTBREW_SYSDIR} )
++endif(BOTBREW_BUILD)
++
+ # add definitions
+ include(DefineCMakeDefaults)
+ include(DefinePlatformDefaults)
+diff -uNr a/src/misc.c b/src/misc.c
+--- a/src/misc.c	2015-08-21 15:58:17.000000000 +0200
++++ b/src/misc.c	2015-11-02 13:20:50.423174377 +0100
+@@ -47,6 +47,9 @@
+ #include <sys/types.h>
+ #include <ctype.h>
+ #include <time.h>
++#ifdef __BIONIC__
++#include <pthread.h>
++#endif
+ 
+ #ifdef _WIN32
+ 
+@@ -206,28 +209,73 @@
+ #define NSS_BUFLEN_PASSWD 4096
+ #endif /* NSS_BUFLEN_PASSWD */
+ 
+-char *ssh_get_user_home_dir(void) {
+-  char *szPath = NULL;
+-  struct passwd pwd;
+-  struct passwd *pwdbuf;
+-  char buf[NSS_BUFLEN_PASSWD];
+-  int rc;
++#ifdef __BIONIC__
++static pthread_mutex_t getpwuid_lock = PTHREAD_MUTEX_INITIALIZER;
++#endif
+ 
+-  rc = getpwuid_r(getuid(), &pwd, buf, NSS_BUFLEN_PASSWD, &pwdbuf);
+-  if (rc != 0) {
+-      szPath = getenv("HOME");
+-      if (szPath == NULL) {
+-          return NULL;
+-      }
+-      memset(buf, 0, sizeof(buf));
+-      snprintf(buf, sizeof(buf), "%s", szPath);
++static char *getpw_name(uid_t uid) {
++  struct passwd *pwd;
++  char *result;
++  
++  result = NULL;
++  
++#ifdef __BIONIC__
++  pthread_mutex_lock(&getpwuid_lock);
++  pwd = getpwuid(uid);
++  if(pwd) {
++    result = strdup(pwd->pw_name);
++  }
++  pthread_mutex_unlock(&getpwuid_lock);
++#else
++  struct passwd pwd1;
++  char buf[NSS_BUFLEN_PASSWD];
++  
++  rc = getpwuid_r(getuid(), &pwd1, buf, NSS_BUFLEN_PASSWD, &pwd);
++  if(rc == 0) {
++   result = strdup(pwd1.pw_name); 
++  }
++#endif
++  return result;
++}
+ 
+-      return strdup(buf);
++static char *getpw_dir(uid_t uid) {
++  struct passwd *pwd;
++  char *result;
++  
++  result = NULL;
++  
++#ifdef __BIONIC__
++  pthread_mutex_lock(&getpwuid_lock);
++  pwd = getpwuid(uid);
++  if(pwd) {
++    result = strdup(pwd->pw_dir);
++  }
++  pthread_mutex_unlock(&getpwuid_lock);
++#else
++  struct passwd pwd1;
++  char buf[NSS_BUFLEN_PASSWD];
++  
++  rc = getpwuid_r(getuid(), &pwd1, buf, NSS_BUFLEN_PASSWD, &pwd);
++  if(rc == 0) {
++   result = strdup(pwd1.pw_dir); 
+   }
++#endif
++  return result;
++}
+ 
+-  szPath = strdup(pwd.pw_dir);
++char *ssh_get_user_home_dir(void) {
++  char *szPath = NULL;
++
++  szPath = getpw_dir(getuid());
++  if(szPath != NULL) {
++    return szPath;
++  }
++  szPath = getenv("HOME");
++  if (szPath == NULL) {
++      return NULL;
++  }
+ 
+-  return szPath;
++  return strndup(szPath, PATH_MAX);
+ }
+ 
+ /* we have read access on file */
+@@ -240,24 +288,7 @@
+ }
+ 
+ char *ssh_get_local_username(void) {
+-    struct passwd pwd;
+-    struct passwd *pwdbuf;
+-    char buf[NSS_BUFLEN_PASSWD];
+-    char *name;
+-    int rc;
+-
+-    rc = getpwuid_r(getuid(), &pwd, buf, NSS_BUFLEN_PASSWD, &pwdbuf);
+-    if (rc != 0) {
+-        return NULL;
+-    }
+-
+-    name = strdup(pwd.pw_name);
+-
+-    if (name == NULL) {
+-        return NULL;
+-    }
+-
+-    return name;
++    return getpw_name(getuid());
+ }
+ 
+ int ssh_is_ipaddr_v4(const char *str) {

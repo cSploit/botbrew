@@ -1,0 +1,13 @@
+Package: libssh
+Version: 0.7.2-0
+Architecture: armeabi
+Section: libs
+Priority: optional
+Source: http://www.libssh.org/
+Description: |
+ tiny C SSH library (OpenSSL flavor) 
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/lib/*.so ${PACKAGE}${PREFIX}/lib/

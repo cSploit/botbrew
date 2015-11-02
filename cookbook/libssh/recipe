@@ -1,0 +1,40 @@
+#!/bin/bash
+if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
+
+PACKAGE_NAME=$(basename $(pwd))
+PACKAGE_VERSION=0.7.2
+PACKAGE_DEPEND=(openssl)
+
+FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
+ARCHIVE=${FULLNAME}.tar.xz
+
+botbrew_do_build() {
+	botbrew_download https://red.libssh.org/attachments/download/177/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://github.com/taka-no-me/android-cmake/raw/master/android.toolchain.cmake android.toolchain.cmake
+	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
+	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+	botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}-android.patch
+	botbrew_import
+	
+	if ! [ -e ${G_OBJECT}/Makefile ]; then
+    (
+      rm -rf ${G_OBJECT}
+      mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
+      
+      cmake -DCMAKE_TOOLCHAIN_FILE=${G_ROOT}/${G_ARCHIVE}/android.toolchain.cmake \
+      -DANDROID_STANDALONE_TOOLCHAIN=${G_ROOT}/${G_TOOLCHAIN} \
+      -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi" \
+      -DWITH_EXAMPLES=OFF -DBOTBREW_BUILD=TRUE -DWITH_STATIC_LIB=ON \
+      -DCMAKE_INSTALL_PREFIX=${G_INSTALLPREFIX} \
+      -DBOTBREW_SYSDIR=${G_SYSDIR} \../${G_SOURCE}
+    )
+  fi
+  
+	if ! [ -e ${G_EXPORT}/.d ]; then
+		${G_MAKE} -C ${G_OBJECT}
+		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
+		botbrew_fix_interpreter_path ${G_EXPORT}
+		${G_STRIP} --strip-unneeded ${G_EXP_LIBDIR}/*.so* || true
+		touch ${G_EXPORT}/.d
+	fi
+}
