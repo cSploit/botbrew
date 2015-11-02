@@ -43,7 +43,7 @@ botbrew_do_build() {
 		${G_MAKE} -C ${G_OBJECT}
 		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
 		botbrew_fix_interpreter_path ${G_EXPORT}
-		${G_STRIP} --strip-unneeded ${G_EXP_BINDIR}/* || true
+		${G_STRIP} --strip-unneeded ${G_EXP_BINDIR}/* ${G_EXP_LIBDIR}/*.so* ${G_EXP_LIBDIR}/ettercap/*.so || true
 		touch ${G_EXPORT}/.d
 	fi
 }
