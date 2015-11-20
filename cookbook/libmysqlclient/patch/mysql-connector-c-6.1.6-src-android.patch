@@ -1,0 +1,47 @@
+diff -uNr a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt	2015-02-25 22:09:49.000000000 +0100
++++ b/CMakeLists.txt	2015-11-07 23:13:37.825424014 +0100
+@@ -44,6 +44,14 @@
+ 
+ MESSAGE(STATUS "Running cmake version ${CMAKE_VERSION}")
+ 
++if(BOTBREW_BUILD)
++  list( APPEND CMAKE_FIND_ROOT_PATH ${BOTBREW_SYSDIR} )
++  SET(OPENSSL_ROOT_DIR ${BOTBREW_SYSDIR})
++  SET(OPENSSL_INCLUDE_DIR ${BOTBREW_SYSDIR}/include)
++  SET(OPENSSL_LIBRARY ${BOTBREW_SYSDIR}/lib/libssl.so)
++  SET(CRYPTO_LIBRARY ${BOTBREW_SYSDIR}/lib/libcrypto.so)
++endif(BOTBREW_BUILD)
++
+ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+ 
+ # First, decide about build type (debug or release)
+diff -uNr a/include/my_dir.h b/include/my_dir.h
+--- a/include/my_dir.h	2015-02-25 22:09:49.000000000 +0100
++++ b/include/my_dir.h	2015-11-20 14:39:37.540089685 +0100
+@@ -40,9 +40,9 @@
+ #define MY_S_ISUID	S_ISUID /* set user id on execution */
+ #define MY_S_ISGID	S_ISGID /* set group id on execution */
+ #define MY_S_ISVTX	S_ISVTX /* save swapped text even after use */
+-#define MY_S_IREAD	S_IREAD /* read permission, owner */
+-#define MY_S_IWRITE	S_IWRITE	/* write permission, owner */
+-#define MY_S_IEXEC	S_IEXEC /* execute/search permission, owner */
++#define MY_S_IREAD	S_IRUSR /* read permission, owner */
++#define MY_S_IWRITE	S_IWUSR	/* write permission, owner */
++#define MY_S_IEXEC	S_IXUSR /* execute/search permission, owner */
+ 
+ #define MY_S_ISDIR(m)	(((m) & MY_S_IFMT) == MY_S_IFDIR)
+ #define MY_S_ISCHR(m)	(((m) & MY_S_IFMT) == MY_S_IFCHR)
+diff -uNr a/include/my_global.h b/include/my_global.h
+--- a/include/my_global.h	2015-02-25 22:09:49.000000000 +0100
++++ b/include/my_global.h	2015-11-20 14:34:59.140076279 +0100
+@@ -166,6 +166,9 @@
+ 
+ #if !defined(HAVE_UINT)
+ typedef unsigned int uint;
++#endif
++
++#ifndef ushort
+ typedef unsigned short ushort;
+ #endif
+ 

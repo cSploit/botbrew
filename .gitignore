@@ -2,6 +2,7 @@ cookbook/*/export
 cookbook/*/import
 cookbook/*/source
 cookbook/*/object
+cookbook/*/object-host
 archive
 toolchain
 config.sh

@@ -1,0 +1,15 @@
+Package: libmysqlclient-dev
+Version: 6.1.6-0
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: http://dev.mysql.com/
+Description: |
+ MySQL database client binaries (development files)
+Depends: libnet
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/include ${EXPORT}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/

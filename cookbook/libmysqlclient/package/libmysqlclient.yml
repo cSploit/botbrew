@@ -1,0 +1,16 @@
+Package: libmysqlclient
+Version: 6.1.6-0
+Architecture: armeabi
+Section: libs
+Priority: optional
+Source: http://dev.mysql.com/
+Description: |
+ MySQL database client binaries
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/bin
+    cp ${EXPORT}${PREFIX}/bin/perror ${PACKAGE}${PREFIX}/bin/
+    cp ${EXPORT}${PREFIX}/bin/my_print_defaults ${PACKAGE}${PREFIX}/bin/
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/lib/*.so* ${PACKAGE}${PREFIX}/lib/

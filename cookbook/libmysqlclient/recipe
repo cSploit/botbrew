@@ -1,0 +1,60 @@
+#!/bin/bash
+if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
+
+PACKAGE_NAME=$(basename $(pwd))
+PACKAGE_VERSION=6.1.6
+PACKAGE_DEPEND=(openssl)
+
+FULLNAME=mysql-connector-c-${PACKAGE_VERSION}-src
+ARCHIVE=${FULLNAME}.tar.gz
+
+botbrew_do_build() {
+	botbrew_download http://dev.mysql.com/get/Downloads/Connector-C/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://github.com/taka-no-me/android-cmake/raw/master/android.toolchain.cmake android.toolchain.cmake
+	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
+	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+	botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}-android.patch
+	botbrew_import
+	
+	if ! [ -e ${G_OBJECT}-host/Makefile ]; then
+    (
+      rm -rf ${G_OBJECT}-host
+      mkdir -p ${G_OBJECT}-host; cd ${G_OBJECT}-host
+      cmake ../${G_SOURCE}
+    )
+  fi
+  
+  if ! [ -e ${G_OBJECT}-host/extra/comp_err ]; then
+    make -C ${G_OBJECT}-host comp_err
+  fi
+	
+	if ! [ -e ${G_OBJECT}/Makefile ]; then
+    (
+      rm -rf ${G_OBJECT}
+      mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
+      
+      for alt in true false; do
+        cmake -DCMAKE_TOOLCHAIN_FILE=${G_ROOT}/${G_ARCHIVE}/android.toolchain.cmake \
+        -DANDROID_STANDALONE_TOOLCHAIN=${G_ROOT}/${G_TOOLCHAIN} \
+        -DHAVE_SIGEV_THREAD_ID=0 -DHAVE_BUILTIN_STPCPY=0 \
+        -DCMAKE_INSTALL_PREFIX=${G_INSTALLPREFIX} \
+        -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="armeabi" -DWITH_ZLIB=system\
+        -DBOTBREW_BUILD=TRUE -DBOTBREW_SYSDIR=${G_SYSDIR} -DWITH_SSL=yes -DSTACK_DIRECTION=-1 \
+        ../${G_SOURCE} || $alt
+      done
+    )
+	fi
+	
+	if ! [ -e ${G_EXPORT}/.d ]; then
+    extra=$(realpath  "${G_OBJECT}-host/extra")
+    export PATH="$PATH:$extra"
+		${G_MAKE} -C ${G_OBJECT}
+		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
+		${G_STRIP} --strip-unneeded ${G_EXP_LIBDIR}/*.so* || true
+		touch ${G_EXPORT}/.d
+	fi
+}
+
+_botbrew_do_clobber() {
+  rm -rf ${G_SOURCE} ${G_OBJECT} ${G_IMPORT} ${G_EXPORT} ${G_OBJECT}-host
+}
