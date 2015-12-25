@@ -535,7 +535,7 @@ fi
 
 G_TRIPLET=${G_TRIPLET:-arm-linux-androideabi}
 G_NDKREL=${G_NDKREL:-7}
-G_NDKAPI=${G_NDKAPI:-8}
+G_NDKAPI=${G_NDKAPI:-9}
 G_NDKGCC=${G_NDKGCC:-4.4.3}
 
 G_NDKPLATFORM=${G_NDKPLATFORM:-${G_NDKPATH}/platforms/android-${G_NDKAPI}/arch-arm}
