@@ -1,0 +1,467 @@
+diff -uNr a/configure b/configure
+--- a/configure	2015-10-05 21:12:06.000000000 +0200
++++ b/configure	2015-12-25 19:53:31.160022396 +0100
+@@ -9281,7 +9281,7 @@
+ done
+ 
+ 
+-for ac_header in crypt.h dld.h fp_class.h getopt.h ieeefp.h ifaddrs.h langinfo.h poll.h pwd.h sys/ioctl.h sys/ipc.h sys/poll.h sys/pstat.h sys/resource.h sys/select.h sys/sem.h sys/shm.h sys/socket.h sys/sockio.h sys/tas.h sys/time.h sys/un.h termios.h ucred.h utime.h wchar.h wctype.h
++for ac_header in crypt.h dld.h fp_class.h getopt.h ieeefp.h ifaddrs.h langinfo.h poll.h pwd.h sys/ioctl.h sys/ipc.h sys/poll.h sys/pstat.h sys/resource.h sys/select.h sys/sem.h sys/shm.h linux/shm.h linux/ipc.h sys/socket.h sys/sockio.h sys/tas.h sys/time.h sys/un.h termios.h ucred.h utime.h wchar.h wctype.h
+ do :
+   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+diff -uNr a/configure.in b/configure.in
+--- a/configure.in	2015-10-05 21:12:06.000000000 +0200
++++ b/configure.in	2015-12-25 19:52:05.907200337 +0100
+@@ -1030,7 +1030,7 @@
+ ##
+ 
+ dnl sys/socket.h is required by AC_FUNC_ACCEPT_ARGTYPES
+-AC_CHECK_HEADERS([crypt.h dld.h fp_class.h getopt.h ieeefp.h ifaddrs.h langinfo.h poll.h pwd.h sys/ioctl.h sys/ipc.h sys/poll.h sys/pstat.h sys/resource.h sys/select.h sys/sem.h sys/shm.h sys/socket.h sys/sockio.h sys/tas.h sys/time.h sys/un.h termios.h ucred.h utime.h wchar.h wctype.h])
++AC_CHECK_HEADERS([crypt.h dld.h fp_class.h getopt.h ieeefp.h ifaddrs.h langinfo.h poll.h pwd.h sys/ioctl.h sys/ipc.h sys/poll.h sys/pstat.h sys/resource.h sys/select.h sys/sem.h sys/shm.h linux/shm.h linux/ipc.h sys/socket.h sys/sockio.h sys/tas.h sys/time.h sys/un.h termios.h ucred.h utime.h wchar.h wctype.h])
+ 
+ # On BSD, test for net/if.h will fail unless sys/socket.h
+ # is included first.
+diff -uNr a/src/backend/port/sysv_shmem.c b/src/backend/port/sysv_shmem.c
+--- a/src/backend/port/sysv_shmem.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/backend/port/sysv_shmem.c	2015-12-25 20:13:41.085937594 +0100
+@@ -23,9 +23,34 @@
+ #include <sys/stat.h>
+ #ifdef HAVE_SYS_IPC_H
+ #include <sys/ipc.h>
++#elif HAVE_LINUX_IPC_H
++#include <linux/ipc.h>
+ #endif
+ #ifdef HAVE_SYS_SHM_H
+ #include <sys/shm.h>
++#elif HAVE_LINUX_SHM_H
++#include <linux/shm.h>
++#endif
++
++#ifdef __BIONIC__
++
++#include <asm/unistd.h>
++
++int shmctl (int __shmid, int __cmd, struct shmid_ds *__buf) {
++  return syscall(__NR_shmctl, __shmid, __cmd, __buf);
++}
++
++int shmget (key_t __key, size_t __size, int __shmflg) {
++  return syscall(__NR_shmget, __key, __size, __shmflg);
++}
++
++void *shmat (int __shmid, const void *__shmaddr, int __shmflg) {
++  return syscall(__NR_shmat, __shmid, __shmaddr, __shmflg);
++}
++
++int shmdt (const void *__shmaddr) {
++  return syscall(__NR_shmdt, __shmaddr);
++}
+ #endif
+ 
+ #include "miscadmin.h"
+diff -uNr a/src/backend/storage/ipc/dsm_impl.c b/src/backend/storage/ipc/dsm_impl.c
+--- a/src/backend/storage/ipc/dsm_impl.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/backend/storage/ipc/dsm_impl.c	2015-12-25 19:39:23.108813855 +0100
+@@ -60,6 +60,8 @@
+ #endif
+ #ifdef HAVE_SYS_SHM_H
+ #include <sys/shm.h>
++#else if HAVE_LINUX_SHM_H
++#include <linux/shm.h>
+ #endif
+ 
+ #include "portability/mem.h"
+diff -uNr a/src/backend/utils/adt/cash.c b/src/backend/utils/adt/cash.c
+--- a/src/backend/utils/adt/cash.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/backend/utils/adt/cash.c	2015-12-25 19:18:50.699864303 +0100
+@@ -109,7 +109,6 @@
+ 			   *psymbol,
+ 			   *nsymbol,
+ 			   *csymbol;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/*
+ 	 * frac_digits will be CHAR_MAX in some locales, notably C.  However, just
+@@ -121,23 +120,14 @@
+ 	 * to test for CHAR_MAX at all, but to impose a range check for plausible
+ 	 * frac_digits values.
+ 	 */
+-	fpoint = lconvert->frac_digits;
+-	if (fpoint < 0 || fpoint > 10)
+-		fpoint = 2;				/* best guess in this case, I think */
++	fpoint = 2;				/* best guess in this case, I think */
+ 
+ 	/* we restrict dsymbol to be a single byte, but not the other symbols */
+-	if (*lconvert->mon_decimal_point != '\0' &&
+-		lconvert->mon_decimal_point[1] == '\0')
+-		dsymbol = *lconvert->mon_decimal_point;
+-	else
+-		dsymbol = '.';
+-	if (*lconvert->mon_thousands_sep != '\0')
+-		ssymbol = lconvert->mon_thousands_sep;
+-	else	/* ssymbol should not equal dsymbol */
+-		ssymbol = (dsymbol != ',') ? "," : ".";
+-	csymbol = (*lconvert->currency_symbol != '\0') ? lconvert->currency_symbol : "$";
+-	psymbol = (*lconvert->positive_sign != '\0') ? lconvert->positive_sign : "+";
+-	nsymbol = (*lconvert->negative_sign != '\0') ? lconvert->negative_sign : "-";
++  dsymbol = '.';
++  ssymbol = ",";
++	csymbol = "$";
++	psymbol = "+";
++	nsymbol = "-";
+ 
+ #ifdef CASHDEBUG
+ 	printf("cashin- precision '%d'; decimal '%c'; thousands '%s'; currency '%s'; positive '%s'; negative '%s'\n",
+@@ -278,49 +268,36 @@
+ 	char		sign_posn,
+ 				cs_precedes,
+ 				sep_by_space;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/* see comments about frac_digits in cash_in() */
+-	points = lconvert->frac_digits;
+-	if (points < 0 || points > 10)
+-		points = 2;				/* best guess in this case, I think */
++	points = 2;				/* best guess in this case, I think */
+ 
+ 	/*
+ 	 * As with frac_digits, must apply a range check to mon_grouping to avoid
+ 	 * being fooled by variant CHAR_MAX values.
+ 	 */
+-	mon_group = *lconvert->mon_grouping;
+-	if (mon_group <= 0 || mon_group > 6)
+-		mon_group = 3;
++	mon_group = 3;
+ 
+-	/* we restrict dsymbol to be a single byte, but not the other symbols */
+-	if (*lconvert->mon_decimal_point != '\0' &&
+-		lconvert->mon_decimal_point[1] == '\0')
+-		dsymbol = *lconvert->mon_decimal_point;
+-	else
+-		dsymbol = '.';
+-	if (*lconvert->mon_thousands_sep != '\0')
+-		ssymbol = lconvert->mon_thousands_sep;
+-	else	/* ssymbol should not equal dsymbol */
+-		ssymbol = (dsymbol != ',') ? "," : ".";
+-	csymbol = (*lconvert->currency_symbol != '\0') ? lconvert->currency_symbol : "$";
++	dsymbol = '.';
++	ssymbol = ",";
++	csymbol = "$";
+ 
+ 	if (value < 0)
+ 	{
+ 		/* make the amount positive for digit-reconstruction loop */
+ 		value = -value;
+ 		/* set up formatting data */
+-		signsymbol = (*lconvert->negative_sign != '\0') ? lconvert->negative_sign : "-";
+-		sign_posn = lconvert->n_sign_posn;
+-		cs_precedes = lconvert->n_cs_precedes;
+-		sep_by_space = lconvert->n_sep_by_space;
++		signsymbol = "-";
++		sign_posn = 1;
++		cs_precedes = 1;
++		sep_by_space = 0;
+ 	}
+ 	else
+ 	{
+-		signsymbol = lconvert->positive_sign;
+-		sign_posn = lconvert->p_sign_posn;
+-		cs_precedes = lconvert->p_cs_precedes;
+-		sep_by_space = lconvert->p_sep_by_space;
++		signsymbol = "";
++		sign_posn = 1;
++		cs_precedes = 1;
++		sep_by_space = 0;
+ 	}
+ 
+ 	/* we build the digits+decimal-point+sep string right-to-left in buf[] */
+@@ -994,12 +971,9 @@
+ 	Datum		amount;
+ 	Datum		numeric_scale;
+ 	Datum		quotient;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/* see comments about frac_digits in cash_in() */
+-	fpoint = lconvert->frac_digits;
+-	if (fpoint < 0 || fpoint > 10)
+-		fpoint = 2;
++	fpoint = 2;
+ 
+ 	/* compute required scale factor */
+ 	scale = 1;
+@@ -1031,12 +1005,9 @@
+ 	int64		scale;
+ 	int			i;
+ 	Datum		numeric_scale;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/* see comments about frac_digits in cash_in() */
+-	fpoint = lconvert->frac_digits;
+-	if (fpoint < 0 || fpoint > 10)
+-		fpoint = 2;
++	fpoint = 2;
+ 
+ 	/* compute required scale factor */
+ 	scale = 1;
+@@ -1064,12 +1035,9 @@
+ 	int			fpoint;
+ 	int64		scale;
+ 	int			i;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/* see comments about frac_digits in cash_in() */
+-	fpoint = lconvert->frac_digits;
+-	if (fpoint < 0 || fpoint > 10)
+-		fpoint = 2;
++	fpoint = 2;
+ 
+ 	/* compute required scale factor */
+ 	scale = 1;
+@@ -1094,12 +1062,9 @@
+ 	int			fpoint;
+ 	int64		scale;
+ 	int			i;
+-	struct lconv *lconvert = PGLC_localeconv();
+ 
+ 	/* see comments about frac_digits in cash_in() */
+-	fpoint = lconvert->frac_digits;
+-	if (fpoint < 0 || fpoint > 10)
+-		fpoint = 2;
++	fpoint = 2;
+ 
+ 	/* compute required scale factor */
+ 	scale = 1;
+diff -uNr a/src/backend/utils/adt/formatting.c b/src/backend/utils/adt/formatting.c
+--- a/src/backend/utils/adt/formatting.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/backend/utils/adt/formatting.c	2015-12-25 19:16:25.529661609 +0100
+@@ -4058,75 +4058,15 @@
+ static void
+ NUM_prepare_locale(NUMProc *Np)
+ {
+-	if (Np->Num->need_locale)
+-	{
+-		struct lconv *lconv;
++  /*
++   * Default values
++   */
++  Np->L_negative_sign = "-";
++  Np->L_positive_sign = "+";
++  Np->decimal = ".";
+ 
+-		/*
+-		 * Get locales
+-		 */
+-		lconv = PGLC_localeconv();
+-
+-		/*
+-		 * Positive / Negative number sign
+-		 */
+-		if (lconv->negative_sign && *lconv->negative_sign)
+-			Np->L_negative_sign = lconv->negative_sign;
+-		else
+-			Np->L_negative_sign = "-";
+-
+-		if (lconv->positive_sign && *lconv->positive_sign)
+-			Np->L_positive_sign = lconv->positive_sign;
+-		else
+-			Np->L_positive_sign = "+";
+-
+-		/*
+-		 * Number decimal point
+-		 */
+-		if (lconv->decimal_point && *lconv->decimal_point)
+-			Np->decimal = lconv->decimal_point;
+-
+-		else
+-			Np->decimal = ".";
+-
+-		if (!IS_LDECIMAL(Np->Num))
+-			Np->decimal = ".";
+-
+-		/*
+-		 * Number thousands separator
+-		 *
+-		 * Some locales (e.g. broken glibc pt_BR), have a comma for decimal,
+-		 * but "" for thousands_sep, so we set the thousands_sep too.
+-		 * http://archives.postgresql.org/pgsql-hackers/2007-11/msg00772.php
+-		 */
+-		if (lconv->thousands_sep && *lconv->thousands_sep)
+-			Np->L_thousands_sep = lconv->thousands_sep;
+-		/* Make sure thousands separator doesn't match decimal point symbol. */
+-		else if (strcmp(Np->decimal, ",") !=0)
+-			Np->L_thousands_sep = ",";
+-		else
+-			Np->L_thousands_sep = ".";
+-
+-		/*
+-		 * Currency symbol
+-		 */
+-		if (lconv->currency_symbol && *lconv->currency_symbol)
+-			Np->L_currency_symbol = lconv->currency_symbol;
+-		else
+-			Np->L_currency_symbol = " ";
+-	}
+-	else
+-	{
+-		/*
+-		 * Default values
+-		 */
+-		Np->L_negative_sign = "-";
+-		Np->L_positive_sign = "+";
+-		Np->decimal = ".";
+-
+-		Np->L_thousands_sep = ",";
+-		Np->L_currency_symbol = " ";
+-	}
++  Np->L_thousands_sep = ",";
++  Np->L_currency_symbol = " ";
+ }
+ 
+ /* ----------
+diff -uNr a/src/backend/utils/adt/pg_locale.c b/src/backend/utils/adt/pg_locale.c
+--- a/src/backend/utils/adt/pg_locale.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/backend/utils/adt/pg_locale.c	2015-12-25 20:20:13.096362168 +0100
+@@ -386,31 +386,7 @@
+  */
+ static void
+ free_struct_lconv(struct lconv * s)
+-{
+-	if (s == NULL)
+-		return;
+-
+-	if (s->currency_symbol)
+-		free(s->currency_symbol);
+-	if (s->decimal_point)
+-		free(s->decimal_point);
+-	if (s->grouping)
+-		free(s->grouping);
+-	if (s->thousands_sep)
+-		free(s->thousands_sep);
+-	if (s->int_curr_symbol)
+-		free(s->int_curr_symbol);
+-	if (s->mon_decimal_point)
+-		free(s->mon_decimal_point);
+-	if (s->mon_grouping)
+-		free(s->mon_grouping);
+-	if (s->mon_thousands_sep)
+-		free(s->mon_thousands_sep);
+-	if (s->negative_sign)
+-		free(s->negative_sign);
+-	if (s->positive_sign)
+-		free(s->positive_sign);
+-}
++{ }
+ 
+ 
+ /*
+@@ -441,13 +417,8 @@
+ PGLC_localeconv(void)
+ {
+ 	static struct lconv CurrentLocaleConv;
+-	struct lconv *extlconv;
+ 	char	   *save_lc_monetary;
+ 	char	   *save_lc_numeric;
+-	char	   *decimal_point;
+-	char	   *grouping;
+-	char	   *thousands_sep;
+-	int			encoding;
+ 
+ #ifdef WIN32
+ 	char	   *save_lc_ctype;
+@@ -502,12 +473,6 @@
+ 
+ 	/* Get formatting information for numeric */
+ 	setlocale(LC_NUMERIC, locale_numeric);
+-	extlconv = localeconv();
+-	encoding = pg_get_encoding_from_locale(locale_numeric, true);
+-
+-	decimal_point = db_encoding_strdup(encoding, extlconv->decimal_point);
+-	thousands_sep = db_encoding_strdup(encoding, extlconv->thousands_sep);
+-	grouping = strdup(extlconv->grouping);
+ 
+ #ifdef WIN32
+ 	/* use monetary to set the ctype */
+@@ -516,24 +481,6 @@
+ 
+ 	/* Get formatting information for monetary */
+ 	setlocale(LC_MONETARY, locale_monetary);
+-	extlconv = localeconv();
+-	encoding = pg_get_encoding_from_locale(locale_monetary, true);
+-
+-	/*
+-	 * Must copy all values since restoring internal settings may overwrite
+-	 * localeconv()'s results.
+-	 */
+-	CurrentLocaleConv = *extlconv;
+-	CurrentLocaleConv.decimal_point = decimal_point;
+-	CurrentLocaleConv.grouping = grouping;
+-	CurrentLocaleConv.thousands_sep = thousands_sep;
+-	CurrentLocaleConv.int_curr_symbol = db_encoding_strdup(encoding, extlconv->int_curr_symbol);
+-	CurrentLocaleConv.currency_symbol = db_encoding_strdup(encoding, extlconv->currency_symbol);
+-	CurrentLocaleConv.mon_decimal_point = db_encoding_strdup(encoding, extlconv->mon_decimal_point);
+-	CurrentLocaleConv.mon_grouping = strdup(extlconv->mon_grouping);
+-	CurrentLocaleConv.mon_thousands_sep = db_encoding_strdup(encoding, extlconv->mon_thousands_sep);
+-	CurrentLocaleConv.negative_sign = db_encoding_strdup(encoding, extlconv->negative_sign);
+-	CurrentLocaleConv.positive_sign = db_encoding_strdup(encoding, extlconv->positive_sign);
+ 
+ 	/* Try to restore internal settings */
+ 	if (save_lc_monetary)
+diff -uNr a/src/bin/psql/print.c b/src/bin/psql/print.c
+--- a/src/bin/psql/print.c	2015-10-05 21:12:06.000000000 +0200
++++ b/src/bin/psql/print.c	2015-12-25 20:26:27.353594351 +0100
+@@ -2676,15 +2676,7 @@
+ void
+ setDecimalLocale(void)
+ {
+-	struct lconv *extlconv;
+-
+-	extlconv = localeconv();
+-
+-	/* Don't accept an empty decimal_point string */
+-	if (*extlconv->decimal_point)
+-		decimal_point = pg_strdup(extlconv->decimal_point);
+-	else
+-		decimal_point = ".";	/* SQL output standard */
++  decimal_point = ".";	/* SQL output standard */
+ 
+ 	/*
+ 	 * Although the Open Group standard allows locales to supply more than one
+@@ -2693,19 +2685,8 @@
+ 	 * cash.c, we must apply a range check to avoid being fooled by variant
+ 	 * CHAR_MAX values.
+ 	 */
+-	groupdigits = *extlconv->grouping;
+-	if (groupdigits <= 0 || groupdigits > 6)
+-		groupdigits = 3;		/* most common */
+-
+-	/* Don't accept an empty thousands_sep string, either */
+-	/* similar code exists in formatting.c */
+-	if (*extlconv->thousands_sep)
+-		thousands_sep = pg_strdup(extlconv->thousands_sep);
+-	/* Make sure thousands separator doesn't match decimal point symbol. */
+-	else if (strcmp(decimal_point, ",") != 0)
+-		thousands_sep = ",";
+-	else
+-		thousands_sep = ".";
++	groupdigits = 3;		/* most common */
++  thousands_sep = ",";
+ }
+ 
+ /* get selected or default line style */
+diff -uNr a/src/include/pg_config.h.in b/src/include/pg_config.h.in
+--- a/src/include/pg_config.h.in	2015-10-05 21:12:06.000000000 +0200
++++ b/src/include/pg_config.h.in	2015-12-25 19:53:31.000000000 +0100
+@@ -302,6 +302,12 @@
+ /* Define to 1 if you have the `z' library (-lz). */
+ #undef HAVE_LIBZ
+ 
++/* Define to 1 if you have the <linux/ipc.h> header file. */
++#undef HAVE_LINUX_IPC_H
++
++/* Define to 1 if you have the <linux/shm.h> header file. */
++#undef HAVE_LINUX_SHM_H
++
+ /* Define to 1 if constants of type 'long long int' should have the suffix LL.
+    */
+ #undef HAVE_LL_CONSTANTS

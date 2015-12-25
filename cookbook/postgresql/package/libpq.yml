@@ -1,0 +1,13 @@
+Package: libpq
+Version: 9.4.5-1
+Architecture: armeabi
+Section: libs
+Priority: optional
+Source: http://www.postgresql.org/
+Description: |
+ PostgreSQL C client library
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/lib
+    cp -r ${EXPORT}${PREFIX}/lib/libpq.so* ${PACKAGE}${PREFIX}/lib/

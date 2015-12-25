@@ -1,0 +1,18 @@
+Package: libpq-dev
+Version: 9.4.5-1
+Architecture: armeabi
+Section: libdevel
+Priority: optional
+Source: http://www.postgresql.org/
+Description: |
+ PostgreSQL C client library
+Depends: libpq
+Data:
+ /CONTROL/init: |
+    #!/bin/sh
+    mkdir -p ${PACKAGE}${PREFIX}/bin ${PACKAGE}${PREFIX}/lib/pkgconfig
+    cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
+    cp ${EXPORT}${PREFIX}/bin/*-config ${PACKAGE}${PREFIX}/bin/
+    cp ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/
+    cp ${EXPORT}${PREFIX}/lib/pkgconfig/libpq.pc ${PACKAGE}${PREFIX}/lib/pkgconfig/
+    
