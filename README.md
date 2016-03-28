@@ -2,14 +2,6 @@
 
 This project compiles various *nix tools and makes Opkg packages suitable for installation on ARM devices running Android.
 
-## Prebuilt
-
-If you just want to use prebuilt binaries, try the [BotBrew GUI](http://botbrew.com/); or get a shell on your rooted Android device and run:
-
-    wget http://repo.botbrew.com/anise/bootstrap/install.sh -O- | su
-
-Otherwise, keep reading to roll your own.
-
 ## Prerequisites
 
 The following Debian packages are required for using BotBrew. Actually, there may be more or fewer requirements depending on the software is to be built, but this is a reasonable starting point. If the build process halts for some reason, it might be calling for additional packages.
@@ -52,6 +44,9 @@ BotBrew knows how to make
 - vim
 - dropbear
 - weechat
+- ettercap
+- nmap
+- hydra
 - ... and more (have a look at the cookbook)
 
 Some projects do not generate packages at all; instead, they provide libraries that allow other projects to be built. These may eventually be packaged as well, to facilitate on-board software development.
