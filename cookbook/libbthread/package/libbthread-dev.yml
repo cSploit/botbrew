@@ -11,5 +11,5 @@ Data:
  /CONTROL/init: |
     #!/bin/sh
     mkdir -p ${PACKAGE}${PREFIX}/lib
-    cp -r ${EXPORT}${PREFIX}/include ${EXPORT}${PREFIX}/
+    cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
     cp -r ${EXPORT}${PREFIX}/lib/*.a ${EXPORT}${PREFIX}/lib/*.la ${PACKAGE}${PREFIX}/lib/
