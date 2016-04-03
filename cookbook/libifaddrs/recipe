@@ -6,7 +6,7 @@ PACKAGE_VERSION=1.0
 PACKAGE_DEPEND=()
 
 botbrew_do_build() {
-  botbrew_git git://github.com/morristech/android-${PACKAGE_NAME}.git ${PACKAGE_NAME}
+  botbrew_git git://github.com/morristech/android-ifaddrs.git ${PACKAGE_NAME}
   botbrew_copytree ${PACKAGE_NAME} ${G_SOURCE} || true
   if ! [ -e ${G_OBJECT}/.d ]; then
     (
