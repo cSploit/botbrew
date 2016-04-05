@@ -9,7 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.bz2
 
 botbrew_do_build() {
-	botbrew_download http://www.apache.org/dist/${PACKAGE_NAME}/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://archive.apache.org/dist/${PACKAGE_NAME}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
