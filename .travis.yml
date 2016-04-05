@@ -1,4 +1,15 @@
 language: c
+addons:
+  apt:
+    packages:
+    - python-yaml
+    - cmake
+    - bison
+    - flex
+    - git
+    - autoconf
+    - automake
+    - libtool
 install:
   - wget "http://dl.google.com/android/repository/android-ndk-r11c-linux-x86_64.zip" -O /tmp/ndk.zip
   - ( cd $HOME; unzip -q /tmp/ndk.zip; mv android-ndk-* .ndk )
