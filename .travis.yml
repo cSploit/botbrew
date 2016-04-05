@@ -17,7 +17,8 @@ install:
   - ( cd $HOME; unzip -q /tmp/ndk.zip; mv android-ndk-* .ndk )
 before_script:
   - echo -e 'G_MAINTAINER="travis"\nG_NDKPATH="$HOME/.ndk"' > config.sh
-  - python <<<"import sys; print(sys.version);"
+  - export PYTHONPATH="/usr/lib/python2.7/dist-packages"
+  - python <<<"import yaml;"
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
