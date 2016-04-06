@@ -20,4 +20,4 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - make package-musl || (cd cookbook/musl/object; ../../../toolchain/bin/arm-linux-androideabi-gcc -Os -std=c99 -D_XOPEN_SOURCE=700 -pipe -D_XOPEN_SOURCE=700 -D_GNU_SOURCE -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__ -DSK_RELEASE -DNDEBUG -UDEBUG -march=armv5te -mtune=xscale -msoft-float -mthumb-interwork -fpic -fno-exceptions -ffunction-sections -funwind-tables -fmessage-length=0 -O2 -finline-functions -finline-limit=300 -fno-inline-functions-called-once -fgcse-after-reload -frerun-cse-after-loop -frename-registers -fomit-frame-pointer -fstrict-aliasing -funswitch-loops -I./src/internal -I./include -I./arch/arm -c -dD -E src/aio/aio_suspend.c )
+  - make package-all
