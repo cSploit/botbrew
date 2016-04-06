@@ -13,4 +13,4 @@ Data:
     mkdir -p ${PACKAGE}${PREFIX}/lib
     cp -r ${EXPORT}${PREFIX}/include ${PACKAGE}${PREFIX}/
     cp -r ${EXPORT}${PREFIX}/lib/lib* ${PACKAGE}${PREFIX}/lib/
-    rm ${PACKAGE}${PREFIX}/lib/libiberty.*
+    rm -f ${PACKAGE}${PREFIX}/lib/libiberty.*
