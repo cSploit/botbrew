@@ -4278,7 +4278,7 @@
  #ifndef	_UNISTD_H
  #define	_UNISTD_H
  
-+#include <limits.h>
++#include <asm/page.h>
 +#include_next <unistd.h>
 +
  #ifdef __cplusplus
