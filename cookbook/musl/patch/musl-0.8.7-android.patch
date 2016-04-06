@@ -4274,10 +4274,11 @@
  #endif
 --- include/unistd.h
 +++ include/unistd.h
-@@ -1,21 +1,12 @@
+@@ -1,21 +1,13 @@
  #ifndef	_UNISTD_H
  #define	_UNISTD_H
  
++#include <limits.h>
 +#include_next <unistd.h>
 +
  #ifdef __cplusplus
@@ -4298,7 +4299,7 @@
  #undef NULL
  #ifdef __cplusplus
  #define NULL 0
-@@ -23,108 +14,13 @@
+@@ -23,108 +15,13 @@
  #define NULL ((void*)0)
  #endif
  
@@ -4409,7 +4410,7 @@
  size_t confstr(int, char *, size_t);
  
  #define F_ULOCK 0
-@@ -134,33 +30,26 @@
+@@ -134,33 +31,26 @@
  
  #if defined(_XOPEN_SOURCE) || defined(_GNU_SOURCE)
  int lockf(int, int, off_t);
@@ -4452,7 +4453,7 @@
  #define _XOPEN_VERSION          700
  #define _XOPEN_UNIX             1
  #define _XOPEN_ENH_I18N         1
-@@ -203,230 +92,8 @@
+@@ -203,230 +93,8 @@
  
  
  
