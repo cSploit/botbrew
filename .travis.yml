@@ -20,4 +20,4 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - for d in cookbook/*; do d=$(basename $d); make package-$d; done
+  - for d in cookbook/*; do d=$(basename $d); make package-$d &> build.log || cat build.log; done
