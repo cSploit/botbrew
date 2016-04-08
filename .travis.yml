@@ -1,5 +1,7 @@
 python:
   - "2.7"
+sudo: required
+dist: trusty
 addons:
   apt:
     packages:
