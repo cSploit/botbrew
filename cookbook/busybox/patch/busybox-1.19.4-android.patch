@@ -1501,3 +1501,14 @@
  
  	err = 0;
  	while ((m = getmntent(f)) != NULL) {
+--- networking/ifconfig.c
++++ networking/ifconfig.c
+@@ -78,7 +78,7 @@
+ # define IFF_DYNAMIC     0x8000        /* dialup device with changing addresses */
+ #endif
+ 
+-#if ENABLE_FEATURE_IPV6
++#if ENABLE_FEATURE_IPV6 && !defined(_IPV6_H)
+ struct in6_ifreq {
+        struct in6_addr ifr6_addr;
+        uint32_t ifr6_prefixlen;
