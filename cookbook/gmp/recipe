@@ -2,7 +2,7 @@
 if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
 
 PACKAGE_NAME=$(basename $(pwd))
-PACKAGE_VERSION=5.0.4
+PACKAGE_VERSION=6.1.0
 PACKAGE_DEPEND=()
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
@@ -12,7 +12,6 @@ botbrew_do_build() {
 	botbrew_download http://ftp.gnu.org/gnu/${PACKAGE_NAME}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
-	botbrew_patchtree -p0 ${G_SOURCE} patch/gmp-5.0.4-android.patch
 	if ! [ -e ${G_SOURCE}/.do.autoconf ]; then
 		(cd ${G_SOURCE}; autoreconf -sfi)
 		touch ${G_SOURCE}/.do.autoconf
