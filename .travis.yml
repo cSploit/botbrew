@@ -22,7 +22,7 @@ install:
   - ( cd $HOME; unzip -q /tmp/ndk.zip; mv android-ndk-* .ndk )
 before_script:
   - echo -e 'G_MAINTAINER="travis"\nG_NDKPATH="$HOME/.ndk"' > config.sh
-  - export PYTHONPATH="/usr/lib/python2.7/dist-packages"
+  - sudo pip install PyYaml
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
