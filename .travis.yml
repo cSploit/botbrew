@@ -26,5 +26,5 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - goals=$(make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | grep -E '^package')
-  - while read g; do make $g &> build.log || cat build.log; echo "$g done"; done <<<$goals
+  - make build-all
+  - make package-all
