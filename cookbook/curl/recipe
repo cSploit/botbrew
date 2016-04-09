@@ -2,12 +2,17 @@
 if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
 
 PACKAGE_NAME=$(basename $(pwd))
-PACKAGE_VERSION=7.25.1
+PACKAGE_VERSION=7.47.1
 PACKAGE_DEPEND=( openssl )
 
+FULLNAME=${PACKAGE_NAME}-${PACKAGE_NAME}-${PACKAGE_VERSION//./_}
+ARCHIVE=${PACKAGE_NAME}-${PACKAGE_VERSION//./_}.tar.gz
+
 botbrew_do_build() {
-	botbrew_git git://github.com/bagder/${PACKAGE_NAME}.git ${PACKAGE_NAME}
-	botbrew_copytree ${PACKAGE_NAME} ${G_SOURCE} || true
+  botbrew_download https://github.com/curl/curl/archive/${ARCHIVE} ${ARCHIVE}
+  botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
+  botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+  
 	botbrew_import
 	if ! [ -e ${G_SOURCE}/configure ]; then
 		(cd ${G_SOURCE}; ./buildconf)
@@ -29,3 +34,4 @@ botbrew_do_build() {
 		touch ${G_EXPORT}/.d
 	fi
 }
+
