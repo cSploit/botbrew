@@ -25,4 +25,4 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - for d in cookbook/*; do d=$(basename $d); make package-$d &> build.log || cat build.log; echo "package-$d done"; done
+  - travis_wait 30 for d in cookbook/*; do d=$(basename $d); make package-$d &> build.log || cat build.log; echo "package-$d done"; done
