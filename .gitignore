@@ -6,3 +6,4 @@ cookbook/*/object-host
 archive
 toolchain
 config.sh
+/Makefile
