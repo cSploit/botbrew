@@ -2,19 +2,16 @@
 if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
 
 PACKAGE_NAME=$(basename $(pwd))
-PACKAGE_VERSION=7.4.2
+PACKAGE_VERSION=7.2alpha6
 PACKAGE_DEPEND=()
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://www.ivmaisoft.com/_bin/atomic_ops/libatomic_ops-7.4.2.tar.gz libatomic.tar.gz
-	botbrew_unpack libatomic.tar.gz libatomic_ops || true
 	botbrew_download http://www.hboehm.info/gc/gc_source/${FULLNAME}.tar.gz ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
-	ln -s  libatomic_ops ${G_SOURCE}/libatomic_ops
 	botbrew_patchtree -p0 ${G_SOURCE} patch/gc-7.2alpha6-android.patch
 	cp patch/*.h ${G_SOURCE}/include/
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
