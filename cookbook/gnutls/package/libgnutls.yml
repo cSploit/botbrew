@@ -7,7 +7,7 @@ Source: http://www.gnu.org/software/gnutls/
 Description: |
  GNU TLS library - main runtime library
  GnuTLS is a portable library which implements the Transport Layer Security (TLS 1.0, 1.1, 1.2) and Secure Sockets Layer (SSL) 3.0 protocols.
-Depends: libnettle, libhogweed, libtasn1, libgmp
+Depends: libnettle, libhogweed, libtasn1, libgmp, libidn
 Data:
  /CONTROL/init: |
     #!/bin/sh
