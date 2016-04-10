@@ -1,0 +1,14 @@
+diff -uNr src/crywrap/crywrap.c src/crywrap/crywrap.c
+--- src/crywrap/crywrap.c	2012-01-21 01:05:59.000000000 +0100
++++ src/crywrap/crywrap.c	2016-04-10 03:45:54.560070713 +0200
+@@ -51,6 +51,10 @@
+ #include <stdarg.h>
+ #include <unistd.h>
+ 
++#ifdef __BIONIC__
++#define in_port_t unsigned short int
++#endif
++
+ /* Gnulib portability files. */
+ #include "progname.h"
+ #include "argp.h"
