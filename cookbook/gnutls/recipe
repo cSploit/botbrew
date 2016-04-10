@@ -23,7 +23,8 @@ botbrew_do_build() {
 			../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
 				--with-nettle-prefix=${G_SYSDIR} \
 				--with-libtasn1-prefix=${G_SYSDIR} \
-				--with-libiconv-prefix=${G_SYSDIR}
+				--with-libiconv-prefix=${G_SYSDIR} \
+				--without-p11-kit
 			sed -E 's/(install-exec-am\:) install-defexecDATA/\1/g' lib/Makefile > temp
 			mv temp lib/Makefile
 			sed -E 's/(install-exec-am\:) install-defexecDATA/\1/g' extra/Makefile > temp
