@@ -9,7 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://www.hpl.hp.com/personal/Hans_Boehm/${PACKAGE_NAME}/${PACKAGE_NAME}_source/${ARCHIVE} ${ARCHIVE}
+	botbrew_download http://hboehm.info/${PACKAGE_NAME}/${PACKAGE_NAME}_source/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	botbrew_patchtree -p0 ${G_SOURCE} patch/gc-7.2alpha6-android.patch
