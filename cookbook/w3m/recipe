@@ -25,7 +25,6 @@ botbrew_do_build() {
 				--disable-m17n \
 				--with-libiconv-prefix=${G_SYSDIR} \
 				--with-ssl=${G_SYSDIR} \
-				--with-gc=${G_SYSDIR} \
 				--with-editor=/botbrew/bin/nano \
 				--with-termlib=ncursesw
 		)
