@@ -25,6 +25,7 @@ botbrew_do_build() {
 	if ! [ -e ${G_EXPORT}/.d ]; then
 		${G_MAKE} -C ${G_OBJECT}
 		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
+		${G_MAKE} -C ${G_OBJECT} install DESTDIR=${G_SYSDIR}
 		touch ${G_EXPORT}/.d
 	fi
 }
