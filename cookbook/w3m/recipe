@@ -9,6 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
+	sudo ldconfig
 	botbrew_download http://downloads.sourceforge.net/project/${PACKAGE_NAME}/${PACKAGE_NAME}/${FULLNAME}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
