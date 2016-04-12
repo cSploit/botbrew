@@ -29,4 +29,4 @@ script:
   - goals=$(make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | grep -E '^package' | tr ' ' '\n')
   - echo $goals
   - while read g; do make -s $g; done <<<$goals
-  - ls -R cookbook/w3m/
+  - cat cookbook/w3m/object/config.log
