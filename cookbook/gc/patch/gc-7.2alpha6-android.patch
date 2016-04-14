@@ -10,3 +10,56 @@
          ;;
      esac
      case "$host" in
+--- pthread_stop_world.c
++++ pthread_stop_world.c
+@@ -387,24 +387,6 @@
+   int GC_stopping_pid = 0;
+ #endif
+ 
+-#ifdef PLATFORM_ANDROID
+-  extern int tkill(pid_t tid, int sig); /* from sys/linux-unistd.h */
+-
+-  static int android_thread_kill(pid_t tid, int sig)
+-  {
+-    int ret;
+-    int old_errno = errno;
+-
+-    ret = tkill(tid, sig);
+-    if (ret < 0) {
+-        ret = errno;
+-        errno = old_errno;
+-    }
+-
+-    return ret;
+-  }
+-#endif /* PLATFORM_ANDROID */
+-
+ /* We hold the allocation lock.  Suspend all threads that might */
+ /* still be running.  Return the number of suspend signals that */
+ /* were sent.                                                   */
+@@ -449,11 +431,7 @@
+               p -> stop_info.stack_ptr =
+                         *(ptr_t *)((char *)p -> id + UTHREAD_SP_OFFSET);
+ #           else
+-#             ifndef PLATFORM_ANDROID
+-                result = pthread_kill(p -> id, SIG_SUSPEND);
+-#             else
+-                result = android_thread_kill(p -> kernel_id, SIG_SUSPEND);
+-#             endif
++              result = pthread_kill(p -> id, SIG_SUSPEND);
+               switch(result) {
+                 case ESRCH:
+                     /* Not really there anymore.  Possible? */
+@@ -763,11 +741,7 @@
+             if (pthread_resume_np(p -> id) != 0)
+               ABORT("pthread_resume_np failed");
+ #         else
+-#           ifndef PLATFORM_ANDROID
+-              result = pthread_kill(p -> id, SIG_THR_RESTART);
+-#           else
+-              result = android_thread_kill(p -> kernel_id, SIG_THR_RESTART);
+-#           endif
++            result = pthread_kill(p -> id, SIG_THR_RESTART);
+             switch(result) {
+                 case ESRCH:
+                     /* Not really there anymore.  Possible? */
