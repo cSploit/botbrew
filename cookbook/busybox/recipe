@@ -2,7 +2,7 @@
 if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
 
 PACKAGE_NAME=$(basename $(pwd))
-PACKAGE_VERSION=1.19.4
+PACKAGE_VERSION=1.24.2
 PACKAGE_DEPEND=( musl )
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
@@ -12,22 +12,18 @@ botbrew_do_build() {
 	botbrew_download http://busybox.net/downloads/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
-	botbrew_patchtree -p0 ${G_SOURCE} patch/busybox-1.19.4-android.patch
 	botbrew_import
 	rm -f ${G_LIBDIR}/libmusl.so*
 	if ! [ -e ${G_IMPORT}/.do.private ]; then
 		cp patch/*.h ${G_IMPORT_PREFIX}/include/
 		touch ${G_IMPORT}/.do.private
 	fi
-	sed -e 's/crypt//g' ${G_SOURCE}/Makefile.flags > temp
-	mv temp ${G_SOURCE}/Makefile.flags
 	if ! [ -e ${G_OBJECT}/.config ]; then
 		(
 			local SRC=$(pwd)/${G_SOURCE}
 			mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
-			make KBUILD_SRC="${SRC}" -f "${SRC}/Makefile" defconfig
+			make KBUILD_SRC="${SRC}" -f "${SRC}/Makefile" android_ndk_defconfig
 			sleep 1
-			cp ../patch/musl.config .config
 		)
 	fi
 	if ! [ -e ${G_EXPORT}/.d ]; then
