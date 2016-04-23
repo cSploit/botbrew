@@ -10,7 +10,7 @@ goals = argv[1:]
 
 for goal in goals:
 	print "Making %s..." % goal
-	make = system("make -s %s > build.log" % goal)
+	make = system("make -j 4 -s %s > build.log" % goal)
 	if make != 0: # Fail ?
 		system("cat build.log") # Show the logs
 		fail += 1
