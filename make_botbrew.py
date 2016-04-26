@@ -12,7 +12,7 @@ disabled = [
 	package-libnids,
 	package-hello,
 	package-libifaddrs,
-	package-havaged,
+	package-haveged,
 	package-openssl,
 	package-vim,
 	package-ncursesw,
