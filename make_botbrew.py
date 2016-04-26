@@ -12,7 +12,7 @@ goals = argv[1:]
 for goal in goals:
 	if goal not in disabled:
 		print "Making %s..." % goal
-		make = system("make %s 2> build.log" % goal)
+		make = system("make -s %s 2> build.log" % goal)
 		if make != 0: # Fail ?
 			print "%s failed" % goal
 			system("cat build.log") # Show the logs
