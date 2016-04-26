@@ -22,7 +22,6 @@ disabled = [
 	package-libpcap,
 	package-login,
 	package-make,
-	package-libiconv,
 	package-gc,
 	package-musl,
 	package-arpspoof,
