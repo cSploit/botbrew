@@ -5,7 +5,51 @@ from sys import argv
 from os import system
 
 fail, success = 0, 0
-disabled = [] # Put packages name you don't want to compile...
+disabled = [
+	package-opkg,
+	package-patch,
+	package-w3m,
+	package-libnids,
+	package-hello,
+	package-libifaddrs,
+	package-havaged,
+	package-openssl,
+	package-vim,
+	package-ncursesw,
+	package-network-radar,
+	package-libcsploit-common,
+	package-libcares,
+	package-libpcap,
+	package-login,
+	package-make,
+	package-libiconv,
+	package-gc,
+	package-musl,
+	package-arpspoof,
+	package-libnet,
+	package-expat,
+	package-libgpg-error,
+	package-serf,
+	package-apr,
+	package-gdbm,
+	package-readline,
+	package-sqlite,
+	package-apr-utils,
+	package-curl,
+	package-libffi,
+	package-diffutils,
+	package-bzip2,
+	package-lynx,
+	package-hostname,
+	package-zip,
+	package-android-mkbootfs,
+	package-pcre,
+	package-nmap,
+	package-tcpdump,
+	package-fusemounts,
+	package-botbrew-fundation,
+	package-autoconf,
+	package-rsync] # Put packages name you don't want to compile...
 
 goals = argv[1:]
 
