@@ -37,7 +37,7 @@ botbrew_do_build() {
       -DINSTALL_SYSCONFDIR=${G_INSTALLPREFIX}/etc \
       -DHAVE_ARPA_NAMESER_H=FALSE -DBOTBREW_SYSDIR=${G_SYSDIR} \
       -DFLEX_EXECUTABLE=${flex_path} ../${G_SOURCE} || { \
-        find . -name CMakeSystem.cmake -exec cat "{}" \;; return 1 \
+        find . -name CMakeSystem.cmake -exec cat "{}" \;; return 1; \
       }
     )
   fi
