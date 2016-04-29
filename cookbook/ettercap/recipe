@@ -36,7 +36,9 @@ botbrew_do_build() {
       -DINSTALL_DESKTOP=OFF -DBISON_EXECUTABLE=${bison_path} \
       -DINSTALL_SYSCONFDIR=${G_INSTALLPREFIX}/etc \
       -DHAVE_ARPA_NAMESER_H=FALSE -DBOTBREW_SYSDIR=${G_SYSDIR} \
-      -DFLEX_EXECUTABLE=${flex_path} ../${G_SOURCE}
+      -DFLEX_EXECUTABLE=${flex_path} ../${G_SOURCE} || { \
+        find . -name CMakeSystem.cmake -exec cat "{}" \;; return 1 \
+      }
     )
   fi
 	if ! [ -e ${G_EXPORT}/.d ]; then
