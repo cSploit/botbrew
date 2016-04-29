@@ -311,14 +311,3 @@
  #include <fcntl.h>
  #include <regex.h>
  #include <stdio.h>
---- term-utils/script.c
-+++ term-utils/script.c
-@@ -318,7 +318,7 @@
-  int status;
-  pid_t pid;
- 
-- while ((pid = wait3(&status, WNOHANG, 0)) > 0)
-+ while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
-    if (pid == child) {
-      childstatus = status;
-      die = 1;
