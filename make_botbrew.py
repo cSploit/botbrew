@@ -2,6 +2,8 @@
 # Just a simple python script to make pkg and print the logs if it fails
 
 from sys import argv
+from sys import exit
+from os import remove
 import subprocess
 
 fail, success = 0, 0
@@ -82,17 +84,21 @@ for arg in args:
 for goal in goals:
 	if goal not in disabled:
 		print "Making %s..." % goal
-		make_cmd = "make -s %s &> build.log" % goal
+		logfile = "%s.log" % goal
+		make_cmd = "make -s %s &> %s" % (goal, logfile)
 		status = subprocess.call(make_cmd, shell=True)
 		if status != 0: # Fail ?
 			print "%s failed" % goal
-			with open("build.log", 'r') as log:
+			with open(logfile, 'r') as log:
 				print log.read()
 			fail += 1
 		else:
 			success += 1
+		remove(logfile)
 
 print "Failed: %s" % str(fail)
 print "Succesfull: %s" % str(success)
 print "Disabled: %s" % str(len(disabled))
 print "Total: %s" % str(len(goals))
+
+exit(1 if fail > 0 else 0)
