@@ -306,7 +306,7 @@ _botbrew_do_package() {
 		cd "${G_ROOT}/${G_REPO}"
 		for item in ${CWD}/${G_PACKAGE}/*.yml; do
 			[ -f "${item}" ] || continue
-			cat "${item}" | opkg-buildyaml "${CWD}"
+			cat "${item}" | opkg-buildyaml "${CWD}" > /dev/null
 		done
 	)
 }
