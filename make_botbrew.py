@@ -70,12 +70,19 @@ disabled = [
 	"package-autoconf",
 	"package-rsync"] # Put packages name you don't want to compile...
 
-goals = argv[1:]
+args = argv[1:]
+goals = []
+
+for arg in args:
+	if ' ' in arg:
+		goals.extend(arg.split(' '))
+	else:
+		goals.append(arg)
 
 for goal in goals:
 	if goal not in disabled:
 		print "Making %s..." % goal
-		make = system("make -s %s 2> build.log" % goal)
+		make = system("make -s %s &> build.log" % goal)
 		if make != 0: # Fail ?
 			print "%s failed" % goal
 			system("cat build.log") # Show the logs
