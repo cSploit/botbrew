@@ -27,4 +27,4 @@ script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
   - goals=$(make -qp | awk -F':' '/^[a-zA-Z0-9][^$#\/\t=]*:([^=]|$)/ {split($1,A,/ /);for(i in A)print A[i]}' | grep -E '^package' | tr ' ' '\n')
-  - travis_wait 30 python make_botbrew.py $goals
+  - python make_botbrew.py $goals
