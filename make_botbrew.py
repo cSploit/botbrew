@@ -8,23 +8,7 @@ fail, success = 0, 0
 disabled = [] # Put packages name you don't want to compile...
 
 args = argv[1:]
-goals = [
-	"package-busybox",
-	"package-dbus",
-	"package-dialog",
-	"package-ettercap",
-	"package-havaged",
-	"package-hello",
-	"package-libifaddrs",
-	"package-libmysqlclient",
-	"package-libnids",
-	"package-m4",
-	"package-opkg",
-	"package-u-boot",
-	"package-utils-linux",
-	"package-patch",
-	"package-subversion",
-	"package-w3m"]
+goals = []
 
 for arg in args:
 	if ' ' in arg:
