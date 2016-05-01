@@ -20,7 +20,7 @@ botbrew_do_build() {
 			# The neon API is subject to backwards-incompatible change over minor versions: best used as static library
 			CPPFLAGS="${G_CPPFLAGS} -I${G_INCDIR}" CFLAGS="${G_ALL_CFLAGS}" LDFLAGS="-L${G_LIBDIR}" \
 			../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
-				--enable-shared=no
+				--enable-shared=no --without-libproxy
 		)
 	fi
 	if ! [ -e ${G_EXPORT}/.d ]; then

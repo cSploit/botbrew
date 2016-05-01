@@ -3,7 +3,7 @@ if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
 
 PACKAGE_NAME=$(basename $(pwd))
 PACKAGE_VERSION=3.0.17
-PACKAGE_DEPEND=( gmp nettle libtasn1 libiconv )
+PACKAGE_DEPEND=( gmp nettle libtasn1 libiconv libidn )
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.xz
@@ -14,6 +14,7 @@ botbrew_do_build() {
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	botbrew_fix_config ${G_SOURCE}/build-aux
 	botbrew_fix_gnulib ${G_SOURCE}/gl
+	botbrew_patchtree -p0 ${G_SOURCE} patch/${FULLNAME}-android.patch
 	botbrew_import
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
 		(
@@ -23,7 +24,8 @@ botbrew_do_build() {
 			../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
 				--with-nettle-prefix=${G_SYSDIR} \
 				--with-libtasn1-prefix=${G_SYSDIR} \
-				--with-libiconv-prefix=${G_SYSDIR}
+				--with-libiconv-prefix=${G_SYSDIR} \
+				--without-p11-kit
 			sed -E 's/(install-exec-am\:) install-defexecDATA/\1/g' lib/Makefile > temp
 			mv temp lib/Makefile
 			sed -E 's/(install-exec-am\:) install-defexecDATA/\1/g' extra/Makefile > temp

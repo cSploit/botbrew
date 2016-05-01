@@ -46,7 +46,7 @@ botbrew_do_build() {
 	fi
 	
 	if ! [ -e ${G_EXPORT}/.d ]; then
-    extra=$(realpath  "${G_OBJECT}-host/extra")
+    extra=$(readlink -f  "${G_OBJECT}-host/extra")
     export PATH="$PATH:$extra"
 		${G_MAKE} -C ${G_OBJECT}
 		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
