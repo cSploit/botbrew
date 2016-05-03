@@ -16,7 +16,8 @@ botbrew_do_build() {
     (
       mkdir -p ${G_OBJECT}; cd ${G_OBJECT};
       CPPFLAGS="${G_CPPFLAGS}" CFLAGS="${G_ALL_CFLAGS}" LDFLAGS="-L${G_LIBDIR}"
-      ../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET}
+      ../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
+        --enable-silent-rules
     )
   fi
   if ! [ -e ${G_EXPORT}/.d ]; then
