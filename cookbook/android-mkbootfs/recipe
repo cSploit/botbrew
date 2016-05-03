@@ -12,7 +12,6 @@ botbrew_do_build() {
 	fi
 	if ! [ -e ${G_EXPORT}/.d ]; then
 		(
-			set -x
 			cd ${G_OBJECT}
 			rm -f *.o *.a
 			cd cpio
