@@ -95,3 +95,12 @@ diff -uNr a/src/ec_ui.c b/src/ec_ui.c
  
  /* globals */
  
+diff -uNr a/cmake/Modules/EttercapOSTest.cmake b/cmake/Modules/EttercapOSTest.cmake
+--- a/cmake/Modules/EttercapOSTest.cmake    2015-03-14 14:43:11.000000000 +0100
++++ b/cmake/Modules/EttercapOSTest.cmake 2016-05-03 09:39:03.040260257 +0200
+@@ -1,4 +1,4 @@
+-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
++if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Android")
+     set(OS_LINUX 1)
+ elseif(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+     set(OS_BSD 1)
