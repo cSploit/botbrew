@@ -31,7 +31,7 @@ botbrew_do_build() {
 		)
 	fi
 	if ! [ -e ${G_EXPORT}/.d ]; then
-		${G_MAKE} -C ${G_OBJECT}
+		${G_MAKE} -C ${G_OBJECT} >/dev/null
 		${G_MAKE} -C ${G_OBJECT} install DESTDIR=$(pwd)/${G_EXPORT}
 		mkdir -p ${G_EXP_SYSDIR}/share
 		mv ${G_EXP_SYSDIR}/docs ${G_EXP_SYSDIR}/share/
