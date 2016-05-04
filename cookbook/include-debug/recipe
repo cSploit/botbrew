@@ -29,6 +29,10 @@ EOF
       set -e
       CFLAGS="${G_CFLAGS} --sysroot=${G_SYSROOT}"
       ${G_TRIPLET}-gcc -c -o ${G_EXPORT}/test.o ${CFLAGS} ${G_SOURCE}/test.c
+      ${G_TRIPLET}-gcc -print-file-name=libc.so
+      ${G_TRIPLET}-gcc -print-file-name=libc.a
+      ${G_TRIPLET}-gcc -print-search-dirs
+      ${G_TRIPLET}-nm `${G_TRIPLET}-gcc -print-file-name=libc.so` | grep wait3
       ${G_TRIPLET}-gcc -o ${G_EXPORT}/test ${CFLAGS} ${G_EXPORT}/test.o
       ${G_TRIPLET}-gcc -static -o ${G_EXPORT}/test_static ${CFLAGS} ${G_EXPORT}/test.o
     )
