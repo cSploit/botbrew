@@ -24,10 +24,11 @@ EOF
   
   if ! [ -e ${G_EXPORT}/.d ]; then
     mkdir -p ${G_EXPORT} || true
-    ${G_TRIPLET}-gcc -c -E ${G_SOURCE}/test.c # to stdout
-    ${G_TRIPLET}-gcc -c -o ${G_EXPORT}/test.o ${G_SOURCE}/test.c
-    ${G_TRIPLET}-gcc -o ${G_EXPORT}/test ${G_EXPORT}/test.o
-    ${G_TRIPLET}-gcc -static -o ${G_EXPORT}/test_static ${G_EXPORT}/test.o
+    CFLAGS="${G_CFLAGS} --sysroot=${G_SYSROOT}"
+    ${G_TRIPLET}-gcc -c -E ${G_SOURCE}/test.c ${CFLAGS} # to stdout
+    ${G_TRIPLET}-gcc -c -o ${G_EXPORT}/test.o ${CFLAGS} ${G_SOURCE}/test.c
+    ${G_TRIPLET}-gcc -o ${G_EXPORT}/test ${CFLAGS} ${G_EXPORT}/test.o
+    ${G_TRIPLET}-gcc -static -o ${G_EXPORT}/test_static ${CFLAGS} ${G_EXPORT}/test.o
     touch ${G_EXPORT}/.d
   fi
 }
