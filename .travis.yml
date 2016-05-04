@@ -26,4 +26,4 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - make -s -k package-all
+  - make include-debug
