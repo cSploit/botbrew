@@ -1,0 +1,33 @@
+#!/bin/bash
+if [ "${G_BOTBREW}" = "" ]; then kill -SIGINT $$; fi
+
+PACKAGE_NAME=$(basename $(pwd))
+PACKAGE_VERSION=0
+PACKAGE_DEPEND=()
+
+FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
+ARCHIVE=${FULLNAME}.tar.gz
+
+botbrew_do_build() {
+  if ! [ -e ${G_SOURCE}/test.c ]; then
+    (
+      mkdir ${G_SOURCE}; cd ${G_SOURCE}
+      cat > test.c <<'EOF'
+      #include <sys/wait.h>
+      #include <stdio.h>
+      
+      int main() { (void) wait3(NULL, 0, NULL); return 0; }
+      
+EOF
+    )
+  fi
+  
+  if ! [ -e ${G_EXPORT}/.d ]; then
+    mkdir -p ${G_EXPORT} || true
+    ${G_TRIPLET}-gcc -c -E ${G_SOURCE}/test.c # to stdout
+    ${G_TRIPLET}-gcc -c -o ${G_EXPORT}/test.o ${G_SOURCE}/test.c
+    ${G_TRIPLET}-gcc -o ${G_EXPORT}/test ${G_EXPORT}/test.o
+    ${G_TRIPLET}-gcc -static -o ${G_EXPORT}/test_static ${G_EXPORT}/test.o
+    touch ${G_EXPORT}/.d
+  fi
+}
