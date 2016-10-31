@@ -364,9 +364,9 @@ botbrew_makefile() {
 				echo "clobber-${NAME}:"
 				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe clobber"
 				echo "${G_ROOT}/${item}/${G_EXPORT}/.d:"
-				echo "  echo -n 'Building ${NAME}...'"
+				echo "	echo -n 'Building ${NAME}...'"
 				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe build 2>${G_ROOT}/${G_LOG}/${NAME} 2>&1 || { mv ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail; echo 'KO'; exit 1;}"
-				echo "  echo 'ok'"
+				echo "	echo 'ok'"
 				BUILDALL[${#BUILDALL[@]}]=${NAME}
 				PACKAGEALL[${#PACKAGEALL[@]}]="package-${NAME}"
 			fi
