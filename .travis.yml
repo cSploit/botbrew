@@ -27,3 +27,5 @@ script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
   - make -s -k package-all
+after_failure:
+  - for f in log/*.fail; do echo "[FAIL] dumping $f"; cat $f; done

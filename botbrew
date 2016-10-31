@@ -37,6 +37,7 @@ G_ARCHIVE=archive
 G_COOKBOOK=cookbook
 G_RECIPE=recipe
 G_REPO=repo
+G_LOG=log
 
 G_SOURCE=source
 G_OBJECT=object
@@ -363,7 +364,9 @@ botbrew_makefile() {
 				echo "clobber-${NAME}:"
 				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe clobber"
 				echo "${G_ROOT}/${item}/${G_EXPORT}/.d:"
-				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe build"
+				echo "  echo -n 'Building ${NAME}...'"
+				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe build 2>${G_ROOT}/${G_LOG}/${NAME} 2>&1 || { mv ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail; echo 'KO'; exit 1;}"
+				echo "  echo 'ok'"
 				BUILDALL[${#BUILDALL[@]}]=${NAME}
 				PACKAGEALL[${#PACKAGEALL[@]}]="package-${NAME}"
 			fi
