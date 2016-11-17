@@ -1,0 +1,8 @@
+--- util/point.sh
++++ util/point.sh
+@@ -6,5 +6,3 @@
+ else
+     ln -s "$1" "$2"
+ fi
+-echo "$2 => $1"
+-

@@ -18,7 +18,7 @@ addons:
     - fakeroot
 install:
   - sudo update-ca-certificates -f
-  - wget "http://dl.google.com/android/repository/android-ndk-r11c-linux-x86_64.zip" -O /tmp/ndk.zip
+  - wget -q "http://dl.google.com/android/repository/android-ndk-r11c-linux-x86_64.zip" -O /tmp/ndk.zip
   - ( cd $HOME; unzip -q /tmp/ndk.zip; mv android-ndk-* .ndk )
 before_script:
   - echo -e 'G_MAINTAINER="travis"\nG_NDKPATH="$HOME/.ndk"' > config.sh
