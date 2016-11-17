@@ -909,31 +909,21 @@
  
 --- networking/brctl.c
 +++ networking/brctl.c
-@@ -67,6 +67,7 @@
+@@ -67,7 +67,7 @@
  # include <linux/if_bridge.h>
  
  /* FIXME: These 4 funcs are not really clean and could be improved */
-+#ifndef __ANDROID__
- static ALWAYS_INLINE void strtotimeval(struct timeval *tv,
+-static ALWAYS_INLINE void strtotimeval(struct timeval *tv,
++static ALWAYS_INLINE void bb_strtotimeval(struct timeval *tv,
  		const char *time_str)
  {
-@@ -82,6 +83,7 @@
- 	tv->tv_sec = secs;
- 	tv->tv_usec = 1000000 * (secs - tv->tv_sec);
- }
-+#endif
- 
- static ALWAYS_INLINE unsigned long tv_to_jiffies(const struct timeval *tv)
- {
-@@ -104,7 +106,11 @@
+ 	double secs;
+@@ -104,7 +104,7 @@
  static unsigned long str_to_jiffies(const char *time_str)
  {
  	struct timeval tv;
-+#ifdef __ANDROID__
-+	strtotimeval(time_str, &tv);
-+#else
- 	strtotimeval(&tv, time_str);
-+#endif
+-	strtotimeval(&tv, time_str);
++	bb_strtotimeval(&tv, time_str);
  	return tv_to_jiffies(&tv);
  }
  
