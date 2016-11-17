@@ -1502,3 +1502,14 @@
  struct in6_ifreq {
         struct in6_addr ifr6_addr;
         uint32_t ifr6_prefixlen;
+--- miscutils/time.c
++++ miscutils/time.c
+@@ -70,7 +70,7 @@
+ 
+ 	/* Ignore signals, but don't ignore the children.  When wait3
+ 	   returns the child process, set the time the command finished. */
+-	while ((caught = wait3(&resp->waitstatus, 0, &resp->ru)) != pid) {
++	while ((caught = wait4(-1, &resp->waitstatus, 0, &resp->ru)) != pid) {
+ 		if (caught == -1 && errno != EINTR) {
+ 			bb_perror_msg("wait");
+ 			return;
