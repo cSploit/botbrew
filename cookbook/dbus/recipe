@@ -15,7 +15,7 @@ botbrew_do_build() {
 	botbrew_patchtree -p0 ${G_SOURCE} patch/dbus-1.5.12-android.patch
 	botbrew_import
 	if ! [ -e ${G_SOURCE}/configure ]; then
-		(cd ${G_SOURCE}; ./autogen.sh)
+		(cd ${G_SOURCE}; export NOCONFIGURE=1; ./autogen.sh)
 	fi
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
 		(
