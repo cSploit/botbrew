@@ -26,6 +26,5 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
+  - sed -i -E 's#(@cd [^;]+/dcron;)(.*)( [^ ]+botbrew recipe build).*#\1\3#' Makefile
   - make -s -k package-all
-after_failure:
-  - cat log/dcron
