@@ -27,3 +27,5 @@ script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
   - make -s -k package-all
+after_failure:
+  - cat log/dcron
