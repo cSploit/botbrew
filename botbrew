@@ -69,7 +69,7 @@ fi
 
 botbrew_download() {
 	if ! [ -e "${G_ROOT}/${G_ARCHIVE}/$2" ]; then
-		if ! wget "$1" -O "${G_ROOT}/${G_ARCHIVE}/$2"; then
+		if ! wget --tries=3 "$1" -O "${G_ROOT}/${G_ARCHIVE}/$2"; then
 			rm -f "${G_ROOT}/${G_ARCHIVE}/$2"
 			return 1
 		fi
