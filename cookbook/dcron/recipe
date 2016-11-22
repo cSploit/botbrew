@@ -9,7 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://www.jimpryor.net/linux/releases/${ARCHIVE} ${ARCHIVE}
+	botbrew_download http://sources.openelec.tv/mirror/dcron/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	if ! [ -e ${G_SOURCE}/.do.sh ]; then
