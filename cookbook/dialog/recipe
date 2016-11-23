@@ -6,10 +6,10 @@ PACKAGE_VERSION=1.1-20120215
 PACKAGE_DEPEND=( ncursesw libiconv )
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
-ARCHIVE=${PACKAGE_NAME}.tar.gz
+ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://invisible-island.net/datafiles/release/${ARCHIVE} ${ARCHIVE}
+	botbrew_download ftp://invisible-island.net/dialog/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	botbrew_import
