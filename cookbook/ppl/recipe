@@ -12,6 +12,7 @@ botbrew_do_build() {
 	botbrew_download http://bugseng.com/products/${PACKAGE_NAME}/download/ftp/releases/${PACKAGE_VERSION}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+	botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}.patch
 	botbrew_import
 	sed -e '/^dependency_libs=/ d' ${G_LIBDIR}/libgmpxx.la > temp
 	echo "dependency_libs=' ${G_LIBDIR}/libgmp.la'" >> temp
@@ -19,7 +20,7 @@ botbrew_do_build() {
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
 		(
 			mkdir -p ${G_OBJECT}; cd ${G_OBJECT}
-			CPPFLAGS="${G_CPPFLAGS}" CFLAGS="${G_ALL_CFLAGS}" CXXFLAGS="${G_ALL_CXXFLAGS}" \
+			CPPFLAGS="${G_CPPFLAGS} -I${G_SYSDIR}/include" CFLAGS="${G_ALL_CFLAGS}" CXXFLAGS="${G_ALL_CXXFLAGS}" \
 			../${G_SOURCE}/configure ${G_SYSTEMPREFIX[@]} --host=${G_TRIPLET} \
 				--with-gmp=${G_SYSDIR} --enable-silent-rules
 		)
