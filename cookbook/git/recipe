@@ -9,7 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://git-core.googlecode.com/files/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/git-core/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	botbrew_patchtree -p0 ${G_SOURCE} patch/git-1.7.10.rc3.patch
