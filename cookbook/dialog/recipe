@@ -6,7 +6,7 @@ PACKAGE_VERSION=1.1-20120215
 PACKAGE_DEPEND=( ncursesw libiconv )
 
 FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
-ARCHIVE=${FULLNAME}.tar.gz
+ARCHIVE=${FULLNAME}.tgz
 
 botbrew_do_build() {
 	botbrew_download ftp://invisible-island.net/dialog/${ARCHIVE} ${ARCHIVE}
