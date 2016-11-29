@@ -364,11 +364,15 @@ botbrew_makefile() {
 				echo "clobber-${NAME}:"
 				echo "	cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe clobber"
 				echo "${G_ROOT}/${item}/${G_EXPORT}/.d:"
-				echo "	@echo -n 'Building ${NAME}'"
-				echo "	@rm -f ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail"
-				echo "	@(sleep 60; while [ ! -f '${G_ROOT}/${item}/${G_EXPORT}/.d' -a ! -f '${G_ROOT}/${G_LOG}/${NAME}.fail' ] && echo -n '.'; do sleep 60; done)&"
-				echo "	@cd ${G_ROOT}/${DIR}; (while [ ! -f ${G_ROOT}/${item}/${G_EXPORT}/.d ]; do sleep 60; echo -n '.'; done)& ${G_ROOT}/botbrew recipe build >${G_ROOT}/${G_LOG}/${NAME} 2>&1 || { jobs -p | xargs kill 2>/dev/null; mv ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail; echo '  KO'; cat ${G_ROOT}/${G_LOG}/${NAME}.fail; exit 1;}"
-				echo "	@echo '  ok'"
+				if [ -n "$CI" ]; then
+					echo "	@echo -n 'Building ${NAME}'"
+					echo "	@rm -f ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail"
+					echo "	@(sleep 60; while [ ! -f '${G_ROOT}/${item}/${G_EXPORT}/.d' -a ! -f '${G_ROOT}/${G_LOG}/${NAME}.fail' ] && echo -n '.'; do sleep 60; done)&"
+					echo "	@cd ${G_ROOT}/${DIR}; (while [ ! -f ${G_ROOT}/${item}/${G_EXPORT}/.d ]; do sleep 60; echo -n '.'; done)& ${G_ROOT}/botbrew recipe build >${G_ROOT}/${G_LOG}/${NAME} 2>&1 || { jobs -p | xargs kill 2>/dev/null; mv ${G_ROOT}/${G_LOG}/${NAME} ${G_ROOT}/${G_LOG}/${NAME}.fail; echo '  KO'; cat ${G_ROOT}/${G_LOG}/${NAME}.fail; exit 1;}"
+					echo "	@echo '  ok'"
+				else
+					echo "	@cd ${G_ROOT}/${DIR}; ${G_ROOT}/botbrew recipe build"
+				fi
 				BUILDALL[${#BUILDALL[@]}]=${NAME}
 				PACKAGEALL[${#PACKAGEALL[@]}]="package-${NAME}"
 			fi
