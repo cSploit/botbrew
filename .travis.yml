@@ -26,5 +26,5 @@ before_script:
 script:
   - ./botbrew toolchain
   - ./botbrew makefile > Makefile
-  - sed -i -E 's#(@cd ([^;]+)/gcc;)(.*)(; cat [^;]+)#\1 \3; cat \2/gcc/object/config.log#p' Makefile
+  - sed -i -E 's#(@cd ([^;]+)/gcc;)(.*)(; cat [^;]+)#\1 \3; cat \2/gcc/object/arm-linux-androideabi/armv7-a/hard/libgcc/config.log#p' Makefile
   - make -s -k package-all
