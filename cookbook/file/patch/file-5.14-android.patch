@@ -1,0 +1,20 @@
+--- a/src/file.c
++++ b/src/file.c
+@@ -390,7 +390,7 @@
+ 			return 1;
+ 		}
+ 
+-		while ((len = getline(&line, &llen, f)) > 0) {
++		while ((len = getdelim(&line, &llen, '\n', f)) > 0) {
+ 			if (line[len - 1] == '\n')
+ 				line[len - 1] = '\0';
+ 			cwid = file_mbswidth(line);
+@@ -401,7 +401,7 @@
+ 		rewind(f);
+ 	}
+ 
+-	while ((len = getline(&line, &llen, f)) > 0) {
++	while ((len = getdelim(&line, &llen, '\n', f)) > 0) {
+ 		if (line[len - 1] == '\n')
+ 			line[len - 1] = '\0';
+ 		e |= process(ms, line, wid);

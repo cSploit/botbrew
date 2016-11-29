@@ -12,6 +12,7 @@ botbrew_do_build() {
 	botbrew_download ftp://ftp.astron.com/pub/${PACKAGE_NAME}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
+	botbrew_patchtree -p1 ${G_SOURCE} patch/${FULLNAME}-android.patch
 	botbrew_fix_config ${G_SOURCE}
 	if ! [ -e ${G_OBJECT}/Makefile ]; then
 		(
