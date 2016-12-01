@@ -34,4 +34,4 @@ script:
   - ln -s "$(which ccache)" "bin/arm-linux-androideabi-c++"
   - ln -s "$(which ccache)" "bin/arm-linux-androideabi-c++filt"
   - ln -s "$(which ccache)" "bin/arm-linux-androideabi-cpp"
-  - make -s -k package-all
+  - make -s -k package-nmap package-ettercap package-ruby package-hydra 
