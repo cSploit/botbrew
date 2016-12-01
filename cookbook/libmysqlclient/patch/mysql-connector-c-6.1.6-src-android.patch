@@ -45,3 +45,15 @@ diff -uNr a/include/my_global.h b/include/my_global.h
  typedef unsigned short ushort;
  #endif
  
+diff -uNr a/mysys/mf_pack.c b/mysys/mf_pack.c
+--- a/mysys/mf_pack.c	2015-02-25 22:09:49.000000000 +0100
++++ b/mysys/mf_pack.c	2016-12-01 17:43:41.052025120 +0100
+@@ -324,7 +324,7 @@
+ {
+   if (path[0][0] == FN_LIBCHAR)
+     return home_dir;			/* ~/ expanded to home */
+-#ifdef HAVE_GETPWNAM
++#if 0
+   {
+     char *str,save;
+     struct passwd *user_entry;
