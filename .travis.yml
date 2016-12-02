@@ -1,7 +1,5 @@
 python:
   - "2.7"
-rvm:
-  - 1.9.3-p125
 sudo: required
 dist: trusty
 addons:
@@ -23,6 +21,7 @@ install:
   - sudo update-ca-certificates -f
   - wget -q "http://dl.google.com/android/repository/android-ndk-r11c-linux-x86_64.zip" -O /tmp/ndk.zip
   - ( cd $HOME; unzip -q /tmp/ndk.zip; mv android-ndk-* .ndk )
+  - rvm use 1.9.3-p125 --install
 before_script:
   - echo -e 'G_MAINTAINER="travis"\nG_NDKPATH="$HOME/.ndk"' > config.sh
   - export PYTHONPATH="/usr/lib/python2.7/dist-packages"
