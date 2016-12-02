@@ -9,7 +9,7 @@ FULLNAME=${PACKAGE_NAME}-${PACKAGE_VERSION}
 ARCHIVE=${FULLNAME}.tar.gz
 
 botbrew_do_build() {
-	botbrew_download http://ftp.ruby-lang.org/pub/ruby/${ARCHIVE} ${ARCHIVE}
+	botbrew_download https://cache.ruby-lang.org/pub/ruby/${PACKAGE_VERSION:0:3}/${ARCHIVE} ${ARCHIVE}
 	botbrew_unpack ${ARCHIVE} ${FULLNAME} || true
 	botbrew_copytree ${FULLNAME}/${FULLNAME} ${G_SOURCE} || true
 	botbrew_fix_config ${G_SOURCE}/tool
