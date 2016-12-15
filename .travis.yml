@@ -40,5 +40,4 @@ notifications:
   slack:
     rooms:
       - csploit:BYr15dcnal0Dm6UZRafBqWSC#travis
-      - csploit:BYr15dcnal0Dm6UZRafBqWSC#botbrew
-
+      - csploit:BYr15dcnal0Dm6UZRafBqWSC#dev
