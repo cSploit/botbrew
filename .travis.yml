@@ -36,3 +36,9 @@ script:
   - ln -s "$(which ccache)" "bin/arm-linux-androideabi-c++filt"
   - ln -s "$(which ccache)" "bin/arm-linux-androideabi-cpp"
   - make -s -k package-nmap package-ettercap package-ruby package-hydra 
+notifications:
+  slack:
+    rooms:
+      - csploit:BYr15dcnal0Dm6UZRafBqWSC#travis
+      - csploit:BYr15dcnal0Dm6UZRafBqWSC#botbrew
+
